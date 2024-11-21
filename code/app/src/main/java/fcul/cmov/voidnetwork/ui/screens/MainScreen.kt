@@ -17,7 +17,7 @@ import fcul.cmov.voidnetwork.ui.viewmodels.MusicPlayerViewModel
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 
 @Composable
-fun MainScreen(navController: NavController) {
+fun MainScreen(nav: NavController) {
     val communicationViewModel: CommunicationViewModel = viewModel()
     val languageViewModel: LanguageViewModel = viewModel()
     val portalViewModel: PortalViewModel = viewModel()
@@ -27,13 +27,13 @@ fun MainScreen(navController: NavController) {
         initialPage = 1,
         screens = mapOf(
             Icons.Filled.MusicNote to {
-                MusicPlayerScreen(navController = navController)
+                MusicPlayerScreen(nav = nav)
             },
             Icons.Filled.WifiTethering to {
-                CommunicationScreen(navController = navController)
+                CommunicationScreen(nav = nav)
             },
             Icons.Filled.LocationOn to {
-                PortalScreen(navController = navController)
+                PortalScreen(nav = nav)
             }
         )
     )

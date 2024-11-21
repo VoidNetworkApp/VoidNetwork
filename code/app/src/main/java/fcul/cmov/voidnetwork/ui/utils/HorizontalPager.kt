@@ -63,7 +63,7 @@ fun HorizontalPager(
                                 },
                                 selected = selected,
                                 onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
-                                modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                                modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                             )
                         }
                     }
