@@ -35,4 +35,9 @@
     <string name="horizontal_pager_icon">Horizontal Pager Icon</string>
     <string name="back">Back</string>
     <string name="arrow_right">Arrow Right</string>
+    <string name="no_language_selected">No Language Selected</string>
+    <string name="edit_language">Edit Language</string>
+    <string name="language_dictionary">Language Dictionary</string>
+    <string name="code">Code</string>
+    <string name="message">Message</string>
 </resources>
