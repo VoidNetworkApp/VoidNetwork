@@ -8,13 +8,23 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
+import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.ui.screens.portal.RegisterPortalScreenContent
 import fcul.cmov.voidnetwork.ui.utils.ScreenWithTopBar
+import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel
 
 @Composable
-fun LanguageScreen(nav: NavController, id: String) {
-    ScreenWithTopBar(title = "Add/Edit Language", nav = nav) { paddingValues ->
+fun LanguageScreen(
+    nav: NavController,
+    viewModel: LanguageViewModel,
+    id: String
+) {
+    ScreenWithTopBar(
+        title = stringResource(R.string.add_edit_language),
+        nav = nav
+    ) { paddingValues ->
         LanguageScreenContent(
             nav = nav,
             id = id,
@@ -30,6 +40,7 @@ fun LanguageScreenContent(nav: NavController, id: String, modifier: Modifier = M
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Add/Edit Language $id")
+        Text(stringResource(R.string.add_edit_language))
+        Text(id)
     }
 }

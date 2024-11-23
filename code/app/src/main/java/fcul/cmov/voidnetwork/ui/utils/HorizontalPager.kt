@@ -16,6 +16,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import fcul.cmov.voidnetwork.R
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -53,7 +55,7 @@ fun HorizontalPager(
                                 icon = {
                                     Icon(
                                         imageVector = icon,
-                                        contentDescription = "",
+                                        contentDescription = stringResource(R.string.horizontal_pager_icon),
                                         tint = if (selected) {
                                             MaterialTheme.colorScheme.primary
                                         } else {
