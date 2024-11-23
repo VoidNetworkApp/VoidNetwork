@@ -5,7 +5,6 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.WifiTethering
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import fcul.cmov.voidnetwork.ui.screens.communication.CommunicationScreen
 import fcul.cmov.voidnetwork.ui.utils.HorizontalPager
@@ -20,6 +19,7 @@ import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 fun MainScreen(
     nav: NavController,
     communicationViewModel: CommunicationViewModel,
+    languageViewModel: LanguageViewModel,
     portalViewModel: PortalViewModel,
     musicPlayerViewModel: MusicPlayerViewModel
 ) {
@@ -37,6 +37,7 @@ fun MainScreen(
                     nav = nav,
                     viewModel = communicationViewModel,
                     portalSelected = portalViewModel.portalSelected,
+                    languageSelected = languageViewModel.languageSelected,
                     navigateToPage = navigateToPage
                 )
             },

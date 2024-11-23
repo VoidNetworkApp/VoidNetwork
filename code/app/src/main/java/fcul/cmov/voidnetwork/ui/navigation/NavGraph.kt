@@ -17,8 +17,8 @@ import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 
 @Composable
 fun NavGraph(navController: NavHostController) {
-    val communicationViewModel: CommunicationViewModel = viewModel()
     val languageViewModel: LanguageViewModel = viewModel()
+    val communicationViewModel: CommunicationViewModel = viewModel()
     val portalViewModel: PortalViewModel = viewModel()
     val musicPlayerViewModel: MusicPlayerViewModel = viewModel()
     NavHost(
@@ -30,7 +30,8 @@ fun NavGraph(navController: NavHostController) {
                 nav = navController,
                 communicationViewModel = communicationViewModel,
                 portalViewModel = portalViewModel,
-                musicPlayerViewModel = musicPlayerViewModel
+                musicPlayerViewModel = musicPlayerViewModel,
+                languageViewModel = languageViewModel
             )
         }
         composable(route = Screens.Languages.route) {

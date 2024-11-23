@@ -2,13 +2,18 @@ package fcul.cmov.voidnetwork.ui.screens.communication
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -64,8 +69,9 @@ fun LanguagesScreen(
             content = { paddingValues ->
                 LanguagesScreenContent(
                     nav = nav,
+                    languages = viewModel.languages.values.toList(),
+                    onLanguageSelection = viewModel::selectLanguage,
                     modifier = Modifier.padding(paddingValues),
-                    languages = viewModel.languages.values.toList()
                 )
             }
         )
@@ -76,6 +82,7 @@ fun LanguagesScreen(
 fun LanguagesScreenContent(
     nav: NavController,
     languages: List<Language>,
+    onLanguageSelection: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column (
@@ -87,6 +94,10 @@ fun LanguagesScreenContent(
             LanguageView(
                 language = language,
                 onLanguageSelection = {
+                    onLanguageSelection(language.id)
+                    nav.popBackStack()
+                },
+                onLanguageEdit = {
                     nav.navigate(Screens.Language.route.args("id" to language.id))
                 }
             )
@@ -98,12 +109,30 @@ fun LanguagesScreenContent(
 fun LanguageView(
     language: Language,
     onLanguageSelection: () -> Unit,
+    onLanguageEdit: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Button(
-        onClick = onLanguageSelection,
-        modifier = modifier.fillMaxWidth(0.8f)
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
     ) {
-        Text(language.name)
+        Button(
+            onClick = onLanguageSelection,
+            modifier = modifier.fillMaxWidth(0.5f)
+        ) {
+            Text(language.name)
+        }
+        Button(
+            onClick = onLanguageEdit,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.background,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            )
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Edit,
+                contentDescription = stringResource(R.string.edit_language),
+            )
+        }
     }
 }
