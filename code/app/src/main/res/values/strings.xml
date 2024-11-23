@@ -34,4 +34,5 @@
     <string name="waiting_for_photo_verification">Waiting for photo verification</string>
     <string name="horizontal_pager_icon">Horizontal Pager Icon</string>
     <string name="back">Back</string>
+    <string name="arrow_right">Arrow Right</string>
 </resources>

@@ -32,17 +32,18 @@ import fcul.cmov.voidnetwork.domain.Portal
 import fcul.cmov.voidnetwork.ui.navigation.Screens
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 
+val portals = listOf(
+    Portal("Rua das Flores", 2.1f),
+    Portal("Avenida do Sol", 23.4f),
+    Portal("Rua da Glória", 35.9f)
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PortalScreen(
     nav: NavController,
     viewModel: PortalViewModel = PortalViewModel()
 ) {
-    val portals = listOf(
-        Portal("Rua das Flores", 2.1f),
-        Portal("Avenida do Sol", 23.4f),
-        Portal("Rua da Glória", 35.9f)
-    )
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
