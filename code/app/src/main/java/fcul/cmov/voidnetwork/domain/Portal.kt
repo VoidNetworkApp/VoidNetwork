@@ -1,0 +1,3 @@
+package fcul.cmov.voidnetwork.domain
+
+data class Portal(val street: String, val distance: Float) // other props...

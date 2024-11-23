@@ -1,6 +1,5 @@
 package fcul.cmov.voidnetwork.ui.screens.portal
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,18 +22,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import fcul.cmov.voidnetwork.R
+import fcul.cmov.voidnetwork.domain.Portal
 import fcul.cmov.voidnetwork.ui.navigation.Screens
-
-data class Portal(val street: String, val distance: Float) // other props...
+import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PortalScreen(nav: NavController) {
+fun PortalScreen(
+    nav: NavController,
+    viewModel: PortalViewModel = PortalViewModel()
+) {
     val portals = listOf(
         Portal("Rua das Flores", 2.1f),
         Portal("Avenida do Sol", 23.4f),
@@ -50,7 +53,7 @@ fun PortalScreen(nav: NavController) {
             ) {
                 Icon(
                     imageVector = Icons.Filled.Add,
-                    contentDescription = "Add Portal",
+                    contentDescription = stringResource(R.string.add_portal),
                     tint = Color.White
                 )
             }
@@ -73,7 +76,7 @@ fun PortalScreenContent(portals: List<Portal>, modifier : Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text("Upside Down Portals")
+        Text(stringResource(R.string.upside_down_portals))
 
         AsyncImage(
             model = "https://developers.google.com/static/maps/images/landing/hero_geocoding_api.png",
@@ -88,8 +91,13 @@ fun PortalScreenContent(portals: List<Portal>, modifier : Modifier = Modifier) {
         ){
             portals.forEach { portal ->
                 Button(onClick = { /*TODO*/ }) {
-                    Text("${portal.street} (${portal.distance} km)" +
-                            if (portal.distance > 5) " - Out of range" else ""
+                    Text(
+                       buildString {
+                            append("${portal.street} (${portal.distance} km)")
+                            if (portal.distance > 5) {
+                                append(" - ${stringResource(R.string.out_of_range)}")
+                            }
+                        }
                     )
                 }
             }

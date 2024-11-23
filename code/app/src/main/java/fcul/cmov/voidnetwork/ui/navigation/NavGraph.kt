@@ -1,6 +1,7 @@
 package fcul.cmov.voidnetwork.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -9,25 +10,48 @@ import fcul.cmov.voidnetwork.ui.screens.communication.LanguageScreen
 import fcul.cmov.voidnetwork.ui.screens.communication.LanguagesScreen
 import fcul.cmov.voidnetwork.ui.screens.portal.RegisterPortalScreen
 import fcul.cmov.voidnetwork.ui.utils.getArgument
+import fcul.cmov.voidnetwork.ui.viewmodels.CommunicationViewModel
+import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel
+import fcul.cmov.voidnetwork.ui.viewmodels.MusicPlayerViewModel
+import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 
 @Composable
 fun NavGraph(navController: NavHostController) {
+    val communicationViewModel: CommunicationViewModel = viewModel()
+    val languageViewModel: LanguageViewModel = viewModel()
+    val portalViewModel: PortalViewModel = viewModel()
+    val musicPlayerViewModel: MusicPlayerViewModel = viewModel()
     NavHost(
         navController = navController,
         startDestination = Screens.Main.route
     ) {
         composable(route = Screens.Main.route) {
-            MainScreen(nav = navController)
+            MainScreen(
+                nav = navController,
+                communicationViewModel = communicationViewModel,
+                portalViewModel = portalViewModel,
+                musicPlayerViewModel = musicPlayerViewModel
+            )
         }
         composable(route = Screens.Languages.route) {
-            LanguagesScreen(nav = navController)
+            LanguagesScreen(
+                nav = navController,
+                viewModel = languageViewModel
+            )
         }
         composable(route = Screens.Language.route) { navBackStack ->
             val id = navBackStack.getArgument(Arguments.id)
-            LanguageScreen(nav = navController, id = id)
+            LanguageScreen(
+                nav = navController,
+                viewModel = languageViewModel,
+                id = id
+            )
         }
         composable(route = Screens.RegisterPortal.route) {
-            RegisterPortalScreen(nav = navController)
+            RegisterPortalScreen(
+                nav = navController,
+                viewModel = portalViewModel
+            )
         }
     }
 }
