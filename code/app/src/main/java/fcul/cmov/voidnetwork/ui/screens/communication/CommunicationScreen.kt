@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.LightMode
@@ -40,6 +42,7 @@ import androidx.navigation.NavController
 import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.CommunicationMode
 import fcul.cmov.voidnetwork.domain.CommunicationType
+import fcul.cmov.voidnetwork.domain.Language
 import fcul.cmov.voidnetwork.domain.Portal
 import fcul.cmov.voidnetwork.ui.navigation.Screens
 import fcul.cmov.voidnetwork.ui.utils.args
@@ -47,11 +50,29 @@ import fcul.cmov.voidnetwork.ui.utils.generateRandomUUID
 import fcul.cmov.voidnetwork.ui.viewmodels.CommunicationViewModel
 import kotlinx.coroutines.delay
 
+const val DEFAULT_LANGUAGE = "Morse Code"
+val morseLanguage = Language(
+    id = "",
+    name = "Morse Code",
+    dictionary = mapOf(
+        "...___..." to "SOS",
+        ".-.. --- ...- ." to "LOVE",
+        ".... . .-.. .-.. ---" to "HELLO",
+        "--. --- --- -.. -... -.-- ." to "GOODBYE",
+        " - .... .- -. -.- ..." to "THANKS",
+        "..-. ..- -." to "FUN",
+        "-.-. --- --- .-." to "COOL",
+        "-... ..- -" to "BUT",
+    )
+)
+
+
 @Composable
 fun CommunicationScreen(
     nav: NavController,
     viewModel: CommunicationViewModel,
-    portalSelected: Portal?
+    portalSelected: Portal?,
+    navigateToPage: (Int) -> Unit = {},
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -69,10 +90,13 @@ fun CommunicationScreen(
             verticalArrangement = Arrangement.SpaceEvenly
         ) {
             LanguageView(
-                languageSelected = "Morse Code", // TODO: get selected language
+                languageSelected = DEFAULT_LANGUAGE, // TODO: get selected language
                 onLanguageSelection = { nav.navigate(Screens.Languages.route) },
             )
-            PortalSelectionView(portalSelected)
+            PortalSelectionView(
+                portalSelected = portalSelected,
+                onPortalsClick = { navigateToPage(2) }
+            )
             MessageView()
         }
     }
@@ -95,13 +119,14 @@ fun LanguageView(
 @Composable
 fun PortalSelectionView(
     portalSelected: Portal?,
+    onPortalsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row (
         modifier = modifier,
         horizontalArrangement = Arrangement.Center
     ) {
-        Button(onClick = { /*TODO*/ }) {
+        Button(onClick = onPortalsClick) {
             Text(
                 if (portalSelected == null) stringResource(R.string.no_portal_selected)
                 else stringResource(R.string.portal_selected)
@@ -230,8 +255,28 @@ fun LightMessageView() {
 
 @Composable
 fun AutomaticMessageView() {
-    Column {
-
+    // Add a vertical scrolling container
+    Column(
+        modifier = Modifier
+            .fillMaxHeight()
+            .fillMaxWidth(0.8f)
+            .padding(20.dp) // Add padding to the container
+            .verticalScroll(rememberScrollState()) // Make the container scrollable
+    ) {
+        // Iterate through the dictionary to display buttons
+        morseLanguage.dictionary.forEach { (key, value) ->
+            Button(
+                onClick = { /* TODO: Handle button click */ },
+                modifier = Modifier
+                    .fillMaxWidth() // Make buttons take the full width
+                    .padding(vertical = 5.dp) // Add vertical spacing between buttons
+            ) {
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.bodyMedium // Apply consistent text style
+                )
+            }
+        }
     }
 }
 

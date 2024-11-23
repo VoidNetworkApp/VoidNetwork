@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HorizontalPager(
-    screens: Map<ImageVector, @Composable () -> Unit>,
+    screens: Map<ImageVector, @Composable (navigateToPage: (Int) -> Unit) -> Unit>,
     initialPage: Int = 0
 ) {
     val pagerState = rememberPagerState(
@@ -38,7 +38,11 @@ fun HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize()
         ) { pageIndex ->
-            screens.values.toList()[pageIndex]()
+            screens.values.toList()[pageIndex] { targetPage ->
+                scope.launch {
+                    pagerState.animateScrollToPage(targetPage)
+                }
+            }
         }
         Box {
             Column(

@@ -3,10 +3,12 @@ package fcul.cmov.voidnetwork.ui.screens.communication
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -22,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fcul.cmov.voidnetwork.R
+import fcul.cmov.voidnetwork.domain.Language
 import fcul.cmov.voidnetwork.ui.navigation.Screens
 import fcul.cmov.voidnetwork.ui.screens.portal.PortalScreenContent
 import fcul.cmov.voidnetwork.ui.utils.ScreenWithTopBar
@@ -61,7 +64,8 @@ fun LanguagesScreen(
             content = { paddingValues ->
                 LanguagesScreenContent(
                     nav = nav,
-                    modifier = Modifier.padding(paddingValues)
+                    modifier = Modifier.padding(paddingValues),
+                    languages = viewModel.languages.values.toList()
                 )
             }
         )
@@ -69,12 +73,37 @@ fun LanguagesScreen(
 }
 
 @Composable
-fun LanguagesScreenContent(nav: NavController, modifier: Modifier = Modifier) {
+fun LanguagesScreenContent(
+    nav: NavController,
+    languages: List<Language>,
+    modifier: Modifier = Modifier
+) {
     Column (
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(stringResource(R.string.select_language))
+        languages.forEach { language ->
+            LanguageView(
+                language = language,
+                onLanguageSelection = {
+                    nav.navigate(Screens.Language.route.args("id" to language.id))
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun LanguageView(
+    language: Language,
+    onLanguageSelection: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = onLanguageSelection,
+        modifier = modifier.fillMaxWidth(0.8f)
+    ) {
+        Text(language.name)
     }
 }

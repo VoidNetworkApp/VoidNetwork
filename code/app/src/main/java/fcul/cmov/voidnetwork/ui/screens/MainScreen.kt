@@ -32,11 +32,12 @@ fun MainScreen(
                     viewModel = musicPlayerViewModel
                 )
             },
-            Icons.Filled.WifiTethering to {
+            Icons.Filled.WifiTethering to { navigateToPage ->
                 CommunicationScreen(
                     nav = nav,
                     viewModel = communicationViewModel,
-                    portalSelected = portalViewModel.portalSelected
+                    portalSelected = portalViewModel.portalSelected,
+                    navigateToPage = navigateToPage
                 )
             },
             Icons.Filled.LocationOn to {
