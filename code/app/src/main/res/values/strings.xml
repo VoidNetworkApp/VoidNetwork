@@ -40,4 +40,14 @@
     <string name="language_dictionary">Language Dictionary</string>
     <string name="code">Code</string>
     <string name="message">Message</string>
+    <string name="add_message">Add Message</string>
+    <string name="cancel">Cancel</string>
+    <string name="enter_message">Enter Message</string>
+    <string name="current_code">Current Code</string>
+    <string name="tap_to_record">Tap to Record</string>
+    <string name="hold_or_tap">Hold or Tap</string>
+    <string name="enter_translation">Enter Translation</string>
+    <string name="add">Add</string>
+    <string name="edit_message">Edit Message</string>
+    <string name="delete_message">Delete Message</string>
 </resources>
