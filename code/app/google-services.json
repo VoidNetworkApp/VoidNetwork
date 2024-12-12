@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "635410180861",
+    "firebase_url": "https://voidnetwork-cm-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "voidnetwork-cm",
+    "storage_bucket": "voidnetwork-cm.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:635410180861:android:53be9a6c8ef977dd9a2c94",
+        "android_client_info": {
+          "package_name": "fcul.cmov.voidnetwork"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARfxuvbsXqAuMQLcmm6UC8Fahd5-gUA5s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

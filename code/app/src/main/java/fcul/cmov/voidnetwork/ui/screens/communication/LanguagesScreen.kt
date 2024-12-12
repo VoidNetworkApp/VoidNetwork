@@ -2,16 +2,16 @@ package fcul.cmov.voidnetwork.ui.screens.communication
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,10 +31,8 @@ import androidx.navigation.NavController
 import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.Language
 import fcul.cmov.voidnetwork.ui.navigation.Screens
-import fcul.cmov.voidnetwork.ui.screens.portal.PortalScreenContent
 import fcul.cmov.voidnetwork.ui.utils.ScreenWithTopBar
 import fcul.cmov.voidnetwork.ui.utils.args
-import fcul.cmov.voidnetwork.ui.utils.generateRandomUUID
 import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,8 +49,11 @@ fun LanguagesScreen(
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = {
-                        val randomId = generateRandomUUID() // TODO: change later
-                        nav.navigate(Screens.Language.route.args("id" to randomId))
+                        viewModel.addLanguage(
+                            onCompleted = { id ->
+                                nav.navigate(Screens.Language.route.args("id" to id))
+                            }
+                        )
                     },
                     containerColor = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(10.dp),
@@ -70,7 +71,8 @@ fun LanguagesScreen(
                 LanguagesScreenContent(
                     nav = nav,
                     languages = viewModel.languages.values.toList(),
-                    onLanguageSelection = viewModel::selectLanguage,
+                    onSelectLanguage = viewModel::selectLanguage,
+                    onDeleteLanguage = viewModel::deleteLanguage,
                     modifier = Modifier.padding(paddingValues),
                 )
             }
@@ -82,7 +84,8 @@ fun LanguagesScreen(
 fun LanguagesScreenContent(
     nav: NavController,
     languages: List<Language>,
-    onLanguageSelection: (String) -> Unit,
+    onSelectLanguage: (String) -> Unit,
+    onDeleteLanguage: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column (
@@ -93,13 +96,14 @@ fun LanguagesScreenContent(
         languages.forEach { language ->
             LanguageView(
                 language = language,
-                onLanguageSelection = {
-                    onLanguageSelection(language.id)
+                onSelectLanguage = {
+                    onSelectLanguage(language.id)
                     nav.popBackStack()
                 },
-                onLanguageEdit = {
+                onEditLanguage = {
                     nav.navigate(Screens.Language.route.args("id" to language.id))
-                }
+                },
+                onDeleteLanguage = { onDeleteLanguage(language.id) }
             )
         }
     }
@@ -108,8 +112,9 @@ fun LanguagesScreenContent(
 @Composable
 fun LanguageView(
     language: Language,
-    onLanguageSelection: () -> Unit,
-    onLanguageEdit: () -> Unit,
+    onSelectLanguage: () -> Unit,
+    onEditLanguage: () -> Unit,
+    onDeleteLanguage: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -117,22 +122,38 @@ fun LanguageView(
         horizontalArrangement = Arrangement.Center
     ) {
         Button(
-            onClick = onLanguageSelection,
-            modifier = modifier.fillMaxWidth(0.5f)
+            onClick = onSelectLanguage,
+            modifier = modifier.fillMaxWidth(0.6f)
         ) {
             Text(language.name)
         }
-        Button(
-            onClick = onLanguageEdit,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.background,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            )
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Edit,
-                contentDescription = stringResource(R.string.edit_language),
-            )
+        Row {
+            Button(
+                onClick = onEditLanguage,
+                contentPadding = PaddingValues(0.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Edit,
+                    contentDescription = stringResource(R.string.edit_language),
+                )
+            }
+            Button(
+                onClick = onDeleteLanguage,
+                contentPadding = PaddingValues(0.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Remove,
+                    contentDescription = stringResource(R.string.delete_language),
+                )
+            }
         }
     }
 }
