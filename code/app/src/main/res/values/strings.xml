@@ -50,4 +50,5 @@
     <string name="add">Add</string>
     <string name="edit_message">Edit Message</string>
     <string name="delete_message">Delete Message</string>
+    <string name="delete_language">Delete Language</string>
 </resources>
