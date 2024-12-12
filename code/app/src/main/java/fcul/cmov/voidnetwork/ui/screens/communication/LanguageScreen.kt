@@ -36,12 +36,12 @@ import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.Language
 import fcul.cmov.voidnetwork.ui.utils.ScreenWithTopBar
 import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel
-import fcul.cmov.voidnetwork.ui.viewmodels.MAX_CODE_LENGTH
-import fcul.cmov.voidnetwork.ui.viewmodels.MAX_MESSAGE_LENGTH
+import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel.Companion.MAX_CODE_LENGTH
+import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel.Companion.MAX_MESSAGE_LENGTH
 
 const val MIN_PRESS_DURATION_SHORT_PRESS = 250 // ms
-const val DOT = "."
-const val DASH = "-"
+const val SHORT = "-"
+const val LONG = "_"
 
 @Composable
 fun LanguageScreen(
@@ -56,7 +56,8 @@ fun LanguageScreen(
         LanguageScreenContent(
             nav = nav,
             modifier = Modifier.padding(paddingValues),
-            language = viewModel.getOrAddLanguageById(id),
+            language = viewModel.getLanguage(id),
+            onDeleteMessage = { code -> viewModel.onDeleteMessageFromLanguage(id, code) },
             onUpdateLanguageDictionary = { code, msg ->
                 viewModel.onUpdateLanguageDictionary(id, code, msg)
             }
@@ -69,6 +70,7 @@ fun LanguageScreenContent(
     nav: NavController,
     language: Language,
     onUpdateLanguageDictionary: (String, String) -> Unit,
+    onDeleteMessage: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var isAddingMessage by rememberSaveable { mutableStateOf(false) }
@@ -80,7 +82,7 @@ fun LanguageScreenContent(
         LanguageDictionary(
             language = language,
             modifier = modifier,
-            onDeleteMessage = { language.dictionary.remove(it) }
+            onDeleteMessage = onDeleteMessage,
         )
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -141,9 +143,9 @@ fun AddMessageForm(
                             val pressDuration = System.currentTimeMillis() - pressStartTime
                             isPressing = false
                             code += if (pressDuration < MIN_PRESS_DURATION_SHORT_PRESS) {
-                                DOT // short press
+                                SHORT // short press
                             } else {
-                                DASH // long press
+                                LONG // long press
                             }
                         }
                     )
