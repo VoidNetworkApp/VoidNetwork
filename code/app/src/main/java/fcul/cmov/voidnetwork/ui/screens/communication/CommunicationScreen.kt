@@ -1,7 +1,6 @@
 package fcul.cmov.voidnetwork.ui.screens.communication
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,12 +40,15 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.CommunicationMode
-import fcul.cmov.voidnetwork.domain.CommunicationType
 import fcul.cmov.voidnetwork.domain.Language
 import fcul.cmov.voidnetwork.domain.Portal
+import fcul.cmov.voidnetwork.repository.LanguagesRepository
 import fcul.cmov.voidnetwork.ui.navigation.Screens
+import fcul.cmov.voidnetwork.ui.utils.rememberPressSequence
 import fcul.cmov.voidnetwork.ui.viewmodels.CommunicationViewModel
 import kotlinx.coroutines.delay
+
+typealias SendSignalHandler = (language: String, signal: String, mode: CommunicationMode) -> Unit
 
 @Composable
 fun CommunicationScreen(
@@ -85,7 +87,7 @@ fun CommunicationScreen(
                     onPortalsClick = { navigateToPage(2) }
                 )
             }
-            MessageView(languageSelected)
+            MessageView(languageSelected, viewModel::sendSignal)
         }
     }
 }
@@ -129,25 +131,30 @@ fun PortalSelectionView(
 @Composable
 fun MessageView(
     languageSelected: Language?,
+    sendSignal: SendSignalHandler,
     modifier: Modifier = Modifier,
 ) {
-    var communicationMode: CommunicationMode by rememberSaveable { mutableStateOf(CommunicationMode.MANUAL)}
+    var communicationMode: CommunicationMode by rememberSaveable { mutableStateOf(CommunicationMode.TOUCH)}
+
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Button(onClick = {
-            communicationMode = communicationMode.other()
-        }) {
-            Text(
-                text = stringResource(
-                    when (communicationMode) {
-                        CommunicationMode.MANUAL -> R.string.manual_message
-                        CommunicationMode.AUTOMATIC -> R.string.automatic_message
-                    }
+        if (languageSelected != null) {
+            Button(onClick = {
+                communicationMode = communicationMode.next()
+            }) {
+                Text(
+                    text = stringResource(
+                        when (communicationMode) {
+                            CommunicationMode.TOUCH -> R.string.touch
+                            CommunicationMode.LIGHT -> R.string.light
+                            CommunicationMode.AUTO -> R.string.auto
+                        }
+                    )
                 )
-            )
+            }
         }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -159,62 +166,66 @@ fun MessageView(
                 .clip(RoundedCornerShape(20.dp))
                 .background(MaterialTheme.colorScheme.surface)
         ) {
-            if (communicationMode == CommunicationMode.MANUAL) {
-                ManualMessageView()
+            if (languageSelected == null) {
+                Text(stringResource(R.string.no_language_selected))
             } else {
-                AutomaticMessageView(languageSelected)
+                when (communicationMode) {
+                    CommunicationMode.TOUCH -> TouchMessageView(languageSelected, sendSignal)
+                    CommunicationMode.LIGHT -> LightMessageView(languageSelected, sendSignal)
+                    CommunicationMode.AUTO -> AutomaticMessageView(languageSelected, sendSignal)
+                }
             }
         }
-
     }
 }
 
 @Composable
-fun ManualMessageView() {
-    var communicationType: CommunicationType by rememberSaveable { mutableStateOf(CommunicationType.TOUCH)}
-
-    Button(onClick = {
-        communicationType = communicationType.other()
-    }) {
-        Text(
-            text = stringResource(
-                when (communicationType) {
-                    CommunicationType.TOUCH -> R.string.touch
-                    CommunicationType.LIGHT -> R.string.light
-                }
-            )
-        )
-    }
-
-    if (communicationType == CommunicationType.TOUCH) {
-        TouchMessageView()
-    } else {
-        LightMessageView()
-    }
-
-}
-
-@Composable
-fun TouchMessageView() {
-    Column {
-        Box (
+fun TouchMessageView(
+    languageSelected: Language,
+    sendSignal: SendSignalHandler
+) {
+    val (sequence, pressModifier, resetSequence) = rememberPressSequence()
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ){
+        Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .size(200.dp)
+                .size(150.dp)
                 .clip(RoundedCornerShape(20.dp))
                 .background(MaterialTheme.colorScheme.primary)
-                .clickable(onClick = { /*TODO*/ })
+                .then(pressModifier),
         ) {
             Icon(
                 imageVector = Icons.Filled.TouchApp,
                 contentDescription = stringResource(R.string.touch),
             )
         }
+        Text(
+            text = sequence,
+            fontSize = 50.sp,
+        )
+        Button(
+            onClick = {
+                sendSignal(
+                    languageSelected.id,
+                    sequence,
+                    CommunicationMode.TOUCH
+                )
+                resetSequence()
+            }
+        ) {
+            Text(stringResource(R.string.send))
+        }
     }
 }
 
 @Composable
-fun LightMessageView() {
+fun LightMessageView(
+    languageSelected: Language,
+    sendSignal: SendSignalHandler
+) {
     // simulate light intensity changes TODO: remove later
     var lightIntensity: Int by rememberSaveable { mutableStateOf(0) }
     val lightColor = Color(255, 255, 255, lightIntensity * 255 / 100)
@@ -243,7 +254,10 @@ fun LightMessageView() {
 }
 
 @Composable
-fun AutomaticMessageView(languageSelected: Language?) {
+fun AutomaticMessageView(
+    languageSelected: Language?,
+    sendSignal: SendSignalHandler
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -254,9 +268,15 @@ fun AutomaticMessageView(languageSelected: Language?) {
             .verticalScroll(rememberScrollState())
     ) {
         if (languageSelected != null) {
-            languageSelected.dictionary.values.forEach { message ->
+            languageSelected.dictionary.forEach { (code, message) ->
                 Button(
-                    onClick = { /* TODO */ },
+                    onClick = { 
+                        sendSignal(
+                            languageSelected.id,
+                            code,
+                            CommunicationMode.AUTO,
+                        )
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 5.dp)
@@ -276,7 +296,7 @@ fun AutomaticMessageView(languageSelected: Language?) {
 fun CommunicationScreenPreview() {
     CommunicationScreen(
         nav = NavController(LocalContext.current),
-        viewModel = CommunicationViewModel(),
+        viewModel = CommunicationViewModel(LanguagesRepository()),
         languageSelected = null,
         portalSelected = null
     )
