@@ -51,4 +51,6 @@
     <string name="edit_message">Edit Message</string>
     <string name="delete_message">Delete Message</string>
     <string name="delete_language">Delete Language</string>
+    <string name="send">Send</string>
+    <string name="auto">Auto</string>
 </resources>

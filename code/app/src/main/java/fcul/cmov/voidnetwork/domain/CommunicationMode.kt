@@ -1,12 +1,9 @@
 package fcul.cmov.voidnetwork.domain
 
 enum class CommunicationMode {
-    MANUAL, AUTOMATIC;
+    AUTO, TOUCH, LIGHT;
 
-    fun other(): CommunicationMode {
-        return when (this) {
-            MANUAL -> AUTOMATIC
-            AUTOMATIC -> MANUAL
-        }
+    fun next(): CommunicationMode {
+        return CommunicationMode.values()[(ordinal + 1) % CommunicationMode.values().size]
     }
 }
