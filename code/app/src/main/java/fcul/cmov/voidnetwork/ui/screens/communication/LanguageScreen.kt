@@ -1,7 +1,6 @@
 package fcul.cmov.voidnetwork.ui.screens.communication
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,7 +26,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,13 +33,9 @@ import androidx.navigation.NavController
 import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.Language
 import fcul.cmov.voidnetwork.ui.utils.ScreenWithTopBar
+import fcul.cmov.voidnetwork.ui.utils.rememberPressSequence
 import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel
-import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel.Companion.MAX_CODE_LENGTH
 import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel.Companion.MAX_MESSAGE_LENGTH
-
-const val MIN_PRESS_DURATION_SHORT_PRESS = 250 // ms
-const val SHORT = "-"
-const val LONG = "_"
 
 @Composable
 fun LanguageScreen(
@@ -112,11 +106,8 @@ fun LanguageScreenContent(
 fun AddMessageForm(
     onUpdateLanguageDictionary: (String, String) -> Unit
 ) {
-    var code by rememberSaveable { mutableStateOf("") }
     var message by rememberSaveable { mutableStateOf("") }
-    var isPressing by rememberSaveable { mutableStateOf(false) }
-    var pressStartTime by rememberSaveable { mutableStateOf(0L) }
-
+    val (sequence, pressModifier, resetSequence) = rememberPressSequence()
     Column(
         modifier = Modifier.padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -133,23 +124,7 @@ fun AddMessageForm(
                 .background(MaterialTheme.colorScheme.secondary)
                 .padding(16.dp)
                 .fillMaxWidth()
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onPress = {
-                            if (code.length >= MAX_CODE_LENGTH) code = ""
-                            isPressing = true
-                            pressStartTime = System.currentTimeMillis()
-                            tryAwaitRelease()
-                            val pressDuration = System.currentTimeMillis() - pressStartTime
-                            isPressing = false
-                            code += if (pressDuration < MIN_PRESS_DURATION_SHORT_PRESS) {
-                                SHORT // short press
-                            } else {
-                                LONG // long press
-                            }
-                        }
-                    )
-                },
+                .then(pressModifier),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -159,18 +134,18 @@ fun AddMessageForm(
             )
         }
         Text(
-            text = code,
+            text = sequence,
             fontSize = 40.sp
         )
         Button(
             onClick = {
-                if (code.isNotBlank() && message.isNotBlank()) {
-                    onUpdateLanguageDictionary(code, message)
-                    code = ""
+                if (sequence.isNotBlank() && message.isNotBlank()) {
+                    onUpdateLanguageDictionary(sequence, message)
+                    resetSequence()
                     message = ""
                 }
             },
-            enabled = code.isNotBlank() && message.isNotBlank()
+            enabled = sequence.isNotBlank() && message.isNotBlank()
         ) {
             Text(text = stringResource(R.string.add_message))
         }

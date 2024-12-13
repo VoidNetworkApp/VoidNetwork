@@ -70,7 +70,7 @@ fun LanguagesScreen(
             content = { paddingValues ->
                 LanguagesScreenContent(
                     nav = nav,
-                    languages = viewModel.languages.values.toList(),
+                    languages = viewModel.getLanguages(),
                     onSelectLanguage = viewModel::selectLanguage,
                     onDeleteLanguage = viewModel::deleteLanguage,
                     modifier = Modifier.padding(paddingValues),
