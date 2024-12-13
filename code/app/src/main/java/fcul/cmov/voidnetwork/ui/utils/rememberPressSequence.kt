@@ -7,12 +7,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import kotlinx.coroutines.delay
 
-const val SHORT = "-"
-const val LONG = "_"
-const val MAX_CODE_LENGTH = 15
-const val MIN_PRESS_DURATION_SHORT_PRESS = 250L
-const val MAX_INACTIVITY_DURATION = 5000L
-
 @Composable
 fun rememberPressSequence(): Triple<String, Modifier, () -> Unit> {
     var sequence by rememberSaveable { mutableStateOf("") }
