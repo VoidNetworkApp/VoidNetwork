@@ -1,13 +1,13 @@
 package fcul.cmov.voidnetwork.ui.navigation
 
+import android.app.Application
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import fcul.cmov.voidnetwork.repository.LanguagesRepository
 import fcul.cmov.voidnetwork.ui.screens.MainScreen
 import fcul.cmov.voidnetwork.ui.screens.communication.LanguageScreen
 import fcul.cmov.voidnetwork.ui.screens.communication.LanguagesScreen
@@ -18,12 +18,13 @@ import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel
 import fcul.cmov.voidnetwork.ui.viewmodels.MusicPlayerViewModel
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 import fcul.cmov.voidnetwork.ui.viewmodels.factories.SharedViewModelFactory
-import fcul.cmov.voidnetwork.ui.viewmodels.repository.LanguagesRepositoryViewModel
+import fcul.cmov.voidnetwork.ui.viewmodels.repository.RepositoryViewModel
 
 @Composable
 fun NavGraph(navController: NavHostController) {
-    val languagesRepository: LanguagesRepositoryViewModel = viewModel()
-    val factory = remember { SharedViewModelFactory(languagesRepository) }
+    val application = LocalContext.current.applicationContext as Application
+    val languagesRepository: RepositoryViewModel = viewModel()
+    val factory = remember { SharedViewModelFactory(application, languagesRepository) }
     val languageViewModel: LanguageViewModel = viewModel(factory = factory)
     val communicationViewModel: CommunicationViewModel = viewModel(factory = factory)
     val portalViewModel: PortalViewModel = viewModel()
