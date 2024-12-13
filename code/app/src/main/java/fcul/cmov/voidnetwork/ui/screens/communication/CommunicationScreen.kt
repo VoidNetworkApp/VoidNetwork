@@ -1,5 +1,6 @@
 package fcul.cmov.voidnetwork.ui.screens.communication
 
+import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,7 +49,7 @@ import fcul.cmov.voidnetwork.ui.utils.rememberPressSequence
 import fcul.cmov.voidnetwork.ui.viewmodels.CommunicationViewModel
 import kotlinx.coroutines.delay
 
-typealias SendSignalHandler = (language: String, signal: String, mode: CommunicationMode) -> Unit
+typealias SendSignalHandler = (language: String?, signal: String, mode: CommunicationMode) -> Unit
 
 @Composable
 fun CommunicationScreen(
@@ -63,7 +64,7 @@ fun CommunicationScreen(
     ) {
         Text(
             text = stringResource(R.string.app_name),
-            fontSize = 50.sp,
+            fontSize = 40.sp,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(50.dp)
@@ -87,7 +88,16 @@ fun CommunicationScreen(
                     onPortalsClick = { navigateToPage(2) }
                 )
             }
-            MessageView(languageSelected, viewModel::sendSignal)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                viewModel.lastMessage?.let {
+                    Text("${it.signal}: ${it.translation}")
+                }
+                Spacer(Modifier.size(20.dp))
+                MessageView(languageSelected, viewModel::sendSignal)
+            }
+
         }
     }
 }
@@ -141,39 +151,33 @@ fun MessageView(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (languageSelected != null) {
-            Button(onClick = {
-                communicationMode = communicationMode.next()
-            }) {
-                Text(
-                    text = stringResource(
-                        when (communicationMode) {
-                            CommunicationMode.TOUCH -> R.string.touch
-                            CommunicationMode.LIGHT -> R.string.light
-                            CommunicationMode.AUTO -> R.string.auto
-                        }
-                    )
+        Button(onClick = {
+            communicationMode = communicationMode.next()
+        }) {
+            Text(
+                text = stringResource(
+                    when (communicationMode) {
+                        CommunicationMode.TOUCH -> R.string.touch
+                        CommunicationMode.LIGHT -> R.string.light
+                        CommunicationMode.AUTO -> R.string.auto
+                    }
                 )
-            }
+            )
         }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier
-                .fillMaxHeight(0.6f)
+                .fillMaxHeight(0.7f)
                 .fillMaxWidth(0.9f)
                 .padding(10.dp)
                 .clip(RoundedCornerShape(20.dp))
                 .background(MaterialTheme.colorScheme.surface)
         ) {
-            if (languageSelected == null) {
-                Text(stringResource(R.string.no_language_selected))
-            } else {
-                when (communicationMode) {
-                    CommunicationMode.TOUCH -> TouchMessageView(languageSelected, sendSignal)
-                    CommunicationMode.LIGHT -> LightMessageView(languageSelected, sendSignal)
-                    CommunicationMode.AUTO -> AutomaticMessageView(languageSelected, sendSignal)
-                }
+            when (communicationMode) {
+                CommunicationMode.TOUCH -> TouchMessageView(languageSelected, sendSignal)
+                CommunicationMode.LIGHT -> LightMessageView(languageSelected, sendSignal)
+                CommunicationMode.AUTO -> AutomaticMessageView(languageSelected, sendSignal)
             }
         }
     }
@@ -181,7 +185,7 @@ fun MessageView(
 
 @Composable
 fun TouchMessageView(
-    languageSelected: Language,
+    languageSelected: Language?,
     sendSignal: SendSignalHandler
 ) {
     val (sequence, pressModifier, resetSequence) = rememberPressSequence()
@@ -209,7 +213,7 @@ fun TouchMessageView(
         Button(
             onClick = {
                 sendSignal(
-                    languageSelected.id,
+                    languageSelected?.id,
                     sequence,
                     CommunicationMode.TOUCH
                 )
@@ -223,7 +227,7 @@ fun TouchMessageView(
 
 @Composable
 fun LightMessageView(
-    languageSelected: Language,
+    languageSelected: Language?,
     sendSignal: SendSignalHandler
 ) {
     // simulate light intensity changes TODO: remove later
@@ -296,7 +300,7 @@ fun AutomaticMessageView(
 fun CommunicationScreenPreview() {
     CommunicationScreen(
         nav = NavController(LocalContext.current),
-        viewModel = CommunicationViewModel(LanguagesRepository()),
+        viewModel = CommunicationViewModel(LocalContext.current as Application, LanguagesRepository()),
         languageSelected = null,
         portalSelected = null
     )
