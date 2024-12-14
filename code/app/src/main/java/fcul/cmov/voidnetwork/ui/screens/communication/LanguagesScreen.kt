@@ -9,9 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -72,7 +71,6 @@ fun LanguagesScreen(
                     nav = nav,
                     languages = viewModel.getLanguages(),
                     onSelectLanguage = viewModel::selectLanguage,
-                    onDeleteLanguage = viewModel::deleteLanguage,
                     modifier = Modifier.padding(paddingValues),
                 )
             }
@@ -85,7 +83,6 @@ fun LanguagesScreenContent(
     nav: NavController,
     languages: List<Language>,
     onSelectLanguage: (String) -> Unit,
-    onDeleteLanguage: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column (
@@ -100,10 +97,9 @@ fun LanguagesScreenContent(
                     onSelectLanguage(language.id)
                     nav.popBackStack()
                 },
-                onEditLanguage = {
+                onViewLanguage = {
                     nav.navigate(Screens.Language.route.args("id" to language.id))
                 },
-                onDeleteLanguage = { onDeleteLanguage(language.id) }
             )
         }
     }
@@ -113,8 +109,7 @@ fun LanguagesScreenContent(
 fun LanguageView(
     language: Language,
     onSelectLanguage: () -> Unit,
-    onEditLanguage: () -> Unit,
-    onDeleteLanguage: () -> Unit,
+    onViewLanguage: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -129,7 +124,7 @@ fun LanguageView(
         }
         Row {
             Button(
-                onClick = onEditLanguage,
+                onClick = onViewLanguage,
                 contentPadding = PaddingValues(0.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.background,
@@ -137,21 +132,8 @@ fun LanguageView(
                 )
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Edit,
-                    contentDescription = stringResource(R.string.edit_language),
-                )
-            }
-            Button(
-                onClick = onDeleteLanguage,
-                contentPadding = PaddingValues(0.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Remove,
-                    contentDescription = stringResource(R.string.delete_language),
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = stringResource(R.string.view_language),
                 )
             }
         }

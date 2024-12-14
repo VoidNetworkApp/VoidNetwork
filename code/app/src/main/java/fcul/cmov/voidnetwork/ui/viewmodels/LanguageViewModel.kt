@@ -12,6 +12,8 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import fcul.cmov.voidnetwork.domain.Language
 import fcul.cmov.voidnetwork.repository.LanguagesRepository
+import fcul.cmov.voidnetwork.ui.utils.MAX_CODE_LENGTH
+import fcul.cmov.voidnetwork.ui.utils.MAX_MESSAGE_LENGTH
 
 class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel() {
     // handles language crud operations and selection
@@ -21,7 +23,6 @@ class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel(
     private val languageDatabase
         get() = database.child("languages")
 
-
     var languageSelected: Language? by mutableStateOf(null)
 
     init {
@@ -29,13 +30,16 @@ class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel(
         listenToChangesFromFirebase()
     }
 
-    companion object {
-        const val MAX_MESSAGE_LENGTH = 20
-        const val MAX_CODE_LENGTH = 20
-    }
-
     fun getLanguage(id: String): Language {
         return languages[id]
+    }
+
+    fun getLanguageOrNull(id: String): Language? {
+        return try {
+            getLanguage(id)
+        } catch (e: IllegalArgumentException) {
+            null
+        }
     }
 
     fun getLanguages(): List<Language> {
@@ -54,11 +58,23 @@ class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel(
         deleteLanguageFromFirebase(id)
     }
 
-    fun onUpdateLanguageDictionary(languageId: String, code: String, msg: String) {7
+    fun onEditLanguage(id: String, name: String) {
+        require(id.isNotBlank()) { "Id must not be blank" }
+        require(name.isNotBlank()) { "Name must not be blank" }
+        require(name.length <= MAX_MESSAGE_LENGTH) { "Language name length must be less than $MAX_MESSAGE_LENGTH" }
+
+        val language = getLanguage(id)
+        if (language.name == name) return // no changes
+        val updatedLanguage = language.copy(name = name)
+        updateLanguageInFirebase(updatedLanguage)
+    }
+
+    fun onUpdateLanguageDictionary(id: String, code: String, msg: String) {7
+        require(id.isNotBlank()) { "Id must not be blank" }
         require(code.length <= MAX_CODE_LENGTH) { "Code length must be less than $MAX_CODE_LENGTH" }
         require(msg.length <= MAX_MESSAGE_LENGTH) { "Message length must be less than $MAX_MESSAGE_LENGTH" }
 
-        val language = getLanguage(languageId)
+        val language = getLanguage(id)
         val updatedLanguage = language.copy(dictionary = language.dictionary + (code to msg))
         updateLanguageInFirebase(updatedLanguage)
     }
