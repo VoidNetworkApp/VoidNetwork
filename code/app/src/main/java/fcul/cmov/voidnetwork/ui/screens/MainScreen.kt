@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.WifiTethering
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
+import com.google.android.gms.location.FusedLocationProviderClient
 import fcul.cmov.voidnetwork.ui.screens.communication.CommunicationScreen
 import fcul.cmov.voidnetwork.ui.utils.HorizontalPager
 import fcul.cmov.voidnetwork.ui.screens.musicplayer.MusicPlayerScreen
@@ -21,7 +22,8 @@ fun MainScreen(
     communicationViewModel: CommunicationViewModel,
     languageViewModel: LanguageViewModel,
     portalViewModel: PortalViewModel,
-    musicPlayerViewModel: MusicPlayerViewModel
+    musicPlayerViewModel: MusicPlayerViewModel,
+    fusedLocationClient: FusedLocationProviderClient
 ) {
     HorizontalPager(
         initialPage = 1,
@@ -44,7 +46,8 @@ fun MainScreen(
             Icons.Filled.LocationOn to {
                 PortalScreen(
                     nav = nav,
-                    viewModel = portalViewModel
+                    viewModel = portalViewModel,
+                    fusedLocationClient = fusedLocationClient
                 )
             }
         )
