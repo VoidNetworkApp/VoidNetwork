@@ -1,6 +1,14 @@
 package fcul.cmov.voidnetwork.ui.screens.portal
 
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
+import android.util.Log
+import androidx.annotation.DrawableRes
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.maps.model.Marker
 import com.mapbox.geojson.Point
 import com.mapbox.maps.MapView
 import com.mapbox.maps.extension.compose.MapEffect
@@ -36,7 +45,9 @@ import com.mapbox.maps.extension.compose.MapboxMap
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 import com.mapbox.maps.plugin.PuckBearing
 import com.mapbox.maps.plugin.annotation.annotations
+import com.mapbox.maps.plugin.annotation.generated.CircleAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
+import com.mapbox.maps.plugin.annotation.generated.createCircleAnnotationManager
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
 import com.mapbox.maps.plugin.locationcomponent.location
@@ -44,6 +55,8 @@ import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.Portal
 import fcul.cmov.voidnetwork.ui.navigation.Screens
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
+
+private var view: MapView? = null
 
 val portals = listOf(
     Portal("Rua das Flores", 2.1f),
@@ -98,21 +111,8 @@ fun PortalScreenContent(portals: List<Portal>, modifier : Modifier = Modifier) {
 
         Box(Modifier.size(350.dp)) {
             MapboxScreen()
+            Button(onClick = { view?.let { marker(it) } }) { }
         }
-
-//        Box(Modifier.size(350.dp)) {
-//            MapboxMap(
-//                Modifier.fillMaxSize(),
-//                mapViewportState = rememberMapViewportState {
-//                    setCameraOptions {
-//                        zoom(10.0)
-//                        center(Point.fromLngLat(-98.0, 39.5))
-//                        pitch(0.0)
-//                        bearing(0.0)
-//                    }
-//                },
-//            )
-//        }
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -148,10 +148,28 @@ fun MapboxScreen() {
                 puckBearingEnabled = true
             }
             mapViewportState.transitionToFollowPuckState()
+            view = mapView
         }
     }
 }
 
+fun marker(mapView: MapView) {
+    Log.d("chegou","chegou")
+    // Create an instance of the Annotation API and get the CircleAnnotationManager.
+    val annotationApi = mapView?.annotations
+    val circleAnnotationManager = annotationApi?.createCircleAnnotationManager()
+    // Set options for the resulting circle layer.
+    val circleAnnotationOptions: CircleAnnotationOptions = CircleAnnotationOptions()
+        // Define a geographic coordinate.
+        .withPoint(Point.fromLngLat(38.7565, -9.1563))
+        // Style the circle that will be added to the map.
+        .withCircleRadius(8.0)
+        .withCircleColor("#ee4e8b")
+        .withCircleStrokeWidth(2.0)
+        .withCircleStrokeColor("#ffffff")
+    // Add the resulting circle to the map.
+    circleAnnotationManager?.create(circleAnnotationOptions)
+}
 
 //@Preview(showBackground = true)
 //@Composable
