@@ -5,6 +5,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.google.android.gms.location.FusedLocationProviderClient
 import fcul.cmov.voidnetwork.ui.screens.MainScreen
 import fcul.cmov.voidnetwork.ui.screens.communication.LanguageScreen
 import fcul.cmov.voidnetwork.ui.screens.communication.LanguagesScreen
@@ -16,7 +17,7 @@ import fcul.cmov.voidnetwork.ui.viewmodels.MusicPlayerViewModel
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 
 @Composable
-fun NavGraph(navController: NavHostController) {
+fun NavGraph(navController: NavHostController, fusedLocationClient: FusedLocationProviderClient) {
     val languageViewModel: LanguageViewModel = viewModel()
     val communicationViewModel: CommunicationViewModel = viewModel()
     val portalViewModel: PortalViewModel = viewModel()
@@ -31,7 +32,8 @@ fun NavGraph(navController: NavHostController) {
                 communicationViewModel = communicationViewModel,
                 portalViewModel = portalViewModel,
                 musicPlayerViewModel = musicPlayerViewModel,
-                languageViewModel = languageViewModel
+                languageViewModel = languageViewModel,
+                fusedLocationClient = fusedLocationClient
             )
         }
         composable(route = Screens.Languages.route) {
