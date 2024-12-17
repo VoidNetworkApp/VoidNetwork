@@ -22,8 +22,7 @@ fun MainScreen(
     communicationViewModel: CommunicationViewModel,
     languageViewModel: LanguageViewModel,
     portalViewModel: PortalViewModel,
-    musicPlayerViewModel: MusicPlayerViewModel,
-    fusedLocationClient: FusedLocationProviderClient
+    musicPlayerViewModel: MusicPlayerViewModel
 ) {
     HorizontalPager(
         initialPage = 1,
@@ -46,8 +45,7 @@ fun MainScreen(
             Icons.Filled.LocationOn to {
                 PortalScreen(
                     nav = nav,
-                    viewModel = portalViewModel,
-                    fusedLocationClient = fusedLocationClient
+                    viewModel = portalViewModel
                 )
             }
         )

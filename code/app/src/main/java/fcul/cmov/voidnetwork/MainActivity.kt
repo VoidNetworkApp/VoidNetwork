@@ -64,7 +64,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
-                    NavGraph(navController = navController, fusedLocationClient = fusedLocationClient)
+                    NavGraph(navController = navController)
                 }
             }
         }

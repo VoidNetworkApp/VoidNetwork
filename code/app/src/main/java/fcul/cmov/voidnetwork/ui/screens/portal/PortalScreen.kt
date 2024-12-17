@@ -1,14 +1,8 @@
 package fcul.cmov.voidnetwork.ui.screens.portal
 
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
+import android.location.Location
 import android.util.Log
-import androidx.annotation.DrawableRes
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,17 +21,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.maps.model.Marker
 import com.mapbox.geojson.Point
 import com.mapbox.maps.MapView
 import com.mapbox.maps.extension.compose.MapEffect
@@ -46,9 +39,7 @@ import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportS
 import com.mapbox.maps.plugin.PuckBearing
 import com.mapbox.maps.plugin.annotation.annotations
 import com.mapbox.maps.plugin.annotation.generated.CircleAnnotationOptions
-import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createCircleAnnotationManager
-import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
 import com.mapbox.maps.plugin.locationcomponent.location
 import fcul.cmov.voidnetwork.R
@@ -64,20 +55,22 @@ val portals = listOf(
     Portal("Rua da Glória", 35.9f)
 )
 
-var fusedLocClient: FusedLocationProviderClient? = null
+var lat: Double = 0.0
+var long: Double = 0.0
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PortalScreen(
     nav: NavController,
-    viewModel: PortalViewModel = PortalViewModel(),
-    fusedLocationClient: FusedLocationProviderClient
+    viewModel: PortalViewModel = PortalViewModel()
 ) {
-    fusedLocClient = fusedLocationClient
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { nav.navigate(Screens.RegisterPortal.route) },
+                onClick = {
+                    val latitude = lat ?: 0.0
+                    val longitude = long ?: 0.0
+                    nav.navigate(Screens.RegisterPortal.createRoute(latitude, longitude)) },
                 containerColor = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 60.dp),
                 shape = CircleShape
@@ -111,7 +104,6 @@ fun PortalScreenContent(portals: List<Portal>, modifier : Modifier = Modifier) {
 
         Box(Modifier.size(350.dp)) {
             MapboxScreen()
-            Button(onClick = { view?.let { marker(it) } }) { }
         }
 
         Column(
@@ -136,32 +128,51 @@ fun PortalScreenContent(portals: List<Portal>, modifier : Modifier = Modifier) {
 @Composable
 fun MapboxScreen() {
     val mapViewportState = rememberMapViewportState()
+    var userLocation by remember { mutableStateOf<Location?>(null) }
+
+    // Composable for Mapbox Map
     MapboxMap(
         Modifier.fillMaxSize(),
         mapViewportState = mapViewportState,
     ) {
         MapEffect(Unit) { mapView ->
+            // Enable location puck
             mapView.location.updateSettings {
                 locationPuck = createDefault2DPuck(withBearing = true)
                 enabled = true
                 puckBearing = PuckBearing.COURSE
                 puckBearingEnabled = true
             }
+
+            // Transition to follow the user's puck
             mapViewportState.transitionToFollowPuckState()
-            view = mapView
+
+            // Add a listener for position changes
+            mapView.location.addOnIndicatorPositionChangedListener { point ->
+                userLocation = Location("").apply {
+                    latitude = point.latitude()
+                    longitude = point.longitude()
+                    lat = latitude
+                    long = longitude
+                    Log.d("lat2", lat.toString())
+                    Log.d("long2", long.toString())
+                }
+            }
         }
     }
 }
 
-fun marker(mapView: MapView) {
-    Log.d("chegou","chegou")
+
+fun marker(latitude: Double, longitude: Double) {
+    Log.d("lat", latitude.toString())
+    Log.d("long", longitude.toString())
     // Create an instance of the Annotation API and get the CircleAnnotationManager.
-    val annotationApi = mapView?.annotations
+    val annotationApi = view?.annotations
     val circleAnnotationManager = annotationApi?.createCircleAnnotationManager()
     // Set options for the resulting circle layer.
     val circleAnnotationOptions: CircleAnnotationOptions = CircleAnnotationOptions()
         // Define a geographic coordinate.
-        .withPoint(Point.fromLngLat(38.7565, -9.1563))
+        .withPoint(Point.fromLngLat(longitude, latitude))
         // Style the circle that will be added to the map.
         .withCircleRadius(8.0)
         .withCircleColor("#ee4e8b")
