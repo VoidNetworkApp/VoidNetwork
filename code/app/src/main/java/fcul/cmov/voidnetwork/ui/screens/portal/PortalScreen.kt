@@ -110,7 +110,7 @@ fun PortalScreenContent(portals: List<Portal>, modifier : Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ){
             portals.forEach { portal ->
-                Button(onClick = { /*TODO*/ }) {
+                Button(onClick = { /*TODO*/ marker(lat,long)}) {
                     Text(
                        buildString {
                             append("${portal.street} (${portal.distance} km)")
@@ -144,6 +144,8 @@ fun MapboxScreen() {
                 puckBearingEnabled = true
             }
 
+            view = mapView
+
             // Transition to follow the user's puck
             mapViewportState.transitionToFollowPuckState()
 
@@ -161,7 +163,6 @@ fun MapboxScreen() {
         }
     }
 }
-
 
 fun marker(latitude: Double, longitude: Double) {
     Log.d("lat", latitude.toString())
