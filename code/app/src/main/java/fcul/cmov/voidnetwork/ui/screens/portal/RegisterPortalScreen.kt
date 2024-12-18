@@ -3,6 +3,8 @@ package fcul.cmov.voidnetwork.ui.screens.portal
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Environment
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -67,6 +69,7 @@ fun RegisterPortalScreenContent(
 ) {
     val context = LocalContext.current
     val file = context.createImageFile()
+    Log.d("TAG_FilePath", file.absolutePath)
     val uri = FileProvider.getUriForFile(
         Objects.requireNonNull(context),
         context.getPackageName() + ".provider", file
@@ -74,14 +77,14 @@ fun RegisterPortalScreenContent(
     var capturedImageUri by remember {
         mutableStateOf<Uri>(Uri.EMPTY)
     }
-    val cameraLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) {
+    val cameraLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicture()){
             capturedImageUri = uri
         }
-
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) {
+        Log.d("TAG", "here")
         cameraLauncher.launch(uri)
     }
     Column(
@@ -90,15 +93,14 @@ fun RegisterPortalScreenContent(
         verticalArrangement = Arrangement.SpaceEvenly,
     ) {
         AsyncImage(
-            model = "https://i.ibb.co/vzVc0v1/treeportal.png",
-            placeholder = painterResource(R.drawable.ic_launcher_foreground),
-            error = painterResource(R.drawable.ic_launcher_foreground),
+            model = capturedImageUri,
+            placeholder = painterResource(R.drawable.treeportal),
+            error = painterResource(R.drawable.treeportal),
             contentDescription = stringResource(R.string.portal_captured_with_camera),
             modifier = Modifier
                 .size(300.dp)
                 .background(Color.Black)
         )
-
         Button(onClick = { if (latitude != null && longitude != null) { marker(latitude, longitude) }
             nav.navigate(Screens.Main.route)
                          }, enabled = true) {
