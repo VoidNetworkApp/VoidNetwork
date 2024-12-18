@@ -84,15 +84,6 @@ fun PortalScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    val newPortalRef = portalsRef.push()
-                    val portal = Portal("Engan8", 38.77, -9.0)
-                    newPortalRef.setValue(portal)
-                        .addOnSuccessListener {
-                            println("Portal created successfully!")
-                        }
-                        .addOnFailureListener { e ->
-                            println("Error creating portal: $e")
-                        }
                     nav.navigate(Screens.RegisterPortal.createRoute(lat, lon)) },
                 containerColor = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 60.dp),
@@ -133,6 +124,25 @@ fun PortalScreenContent(modifier: Modifier = Modifier) {
 
         Box(Modifier.size(350.dp)) {
             MapboxScreen()
+            Button(onClick = {
+                var street = ""
+                fetchStreetName(lat, lon) { streetName ->
+                    if (streetName != null) {
+                        street = streetName
+                        Log.d("Street Name", streetName)
+                        val newPortalRef = portalsRef.push()
+                        val portal = Portal(street , lat, lon)
+                        newPortalRef.setValue(portal)
+                            .addOnSuccessListener {
+                                println("Portal created successfully!")
+                            }
+                            .addOnFailureListener { e ->
+                                println("Error creating portal: $e")
+                            }
+                    } else {
+                        Log.d("Street Name", "Failed to fetch.")
+                    }
+                }}) { }
         }
 
         LazyColumn(
@@ -143,29 +153,6 @@ fun PortalScreenContent(modifier: Modifier = Modifier) {
                 var distance by remember { mutableStateOf(0f) }
                 marker(portal.lat, portal.lon)
                 Button(onClick = { /*TODO*/
-                    // testing
-//                    marker(portal.lat, portal.lon)
-                    // testing
-//                    fetchStreetName(lat, lon) { streetName ->
-//                        if (streetName != null) {
-//                            Log.d("Street Name", streetName)
-//                        } else {
-//                            Log.d("Street Name", "Failed to fetch.")
-//                        }
-//                    }
-
-                    //testing
-                    // Push a new portal to the "portals" node
-//                    val newPortalRef = portalsRef.push()
-//                    newPortalRef.setValue(portal)
-//                        .addOnSuccessListener {
-//                            println("Portal created successfully!")
-//                        }
-//                        .addOnFailureListener { e ->
-//                            println("Error creating portal: $e")
-//                        }
-
-
                 }) {
                     LaunchedEffect(Unit) {
                         while (true) {
