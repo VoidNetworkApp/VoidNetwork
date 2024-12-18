@@ -1,6 +1,7 @@
 package fcul.cmov.voidnetwork.ui.screens.portal
 
 
+import android.content.ContentValues.TAG
 import android.location.Location
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
@@ -9,6 +10,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -21,6 +24,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,6 +37,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import com.mapbox.geojson.Point
 import com.mapbox.maps.MapView
 import com.mapbox.maps.extension.compose.MapEffect
@@ -44,6 +58,7 @@ import fcul.cmov.voidnetwork.domain.Portal
 import fcul.cmov.voidnetwork.ui.navigation.Screens
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -55,12 +70,8 @@ private var view: MapView? = null
 private var lat: Double = 0.0
 private var lon: Double = 0.0
 
-val portals = listOf(
-    Portal("Rua das Flores", 2.1f),
-    Portal("Avenida do Sol", 23.4f),
-    Portal("Rua da Glória", 35.9f)
-)
-
+val database = Firebase.database
+val portalsRef = database.getReference("portals")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,13 +79,21 @@ fun PortalScreen(
     nav: NavController,
     viewModel: PortalViewModel = PortalViewModel()
 ) {
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    val latitude = lat ?: 0.0
-                    val longitude = lon ?: 0.0
-                    nav.navigate(Screens.RegisterPortal.createRoute(latitude, longitude)) },
+                    val newPortalRef = portalsRef.push()
+                    val portal = Portal("Engan8", 38.77, -9.0)
+                    newPortalRef.setValue(portal)
+                        .addOnSuccessListener {
+                            println("Portal created successfully!")
+                        }
+                        .addOnFailureListener { e ->
+                            println("Error creating portal: $e")
+                        }
+                    nav.navigate(Screens.RegisterPortal.createRoute(lat, lon)) },
                 containerColor = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 60.dp),
                 shape = CircleShape
@@ -88,8 +107,8 @@ fun PortalScreen(
         },
         floatingActionButtonPosition = FabPosition.End, // bottom-right
         content = { paddingValues ->
+
             PortalScreenContent(
-                portals = portals,
                 modifier = Modifier.padding(paddingValues)
             )
         }
@@ -98,7 +117,13 @@ fun PortalScreen(
 }
 
 @Composable
-fun PortalScreenContent(portals: List<Portal>, modifier : Modifier = Modifier) {
+fun PortalScreenContent(modifier: Modifier = Modifier) {
+    val portals = remember { mutableStateOf<List<Portal>>(emptyList()) }
+
+    LaunchedEffect(true) {
+        fetchPortalsFromFirebase(portals)
+    }
+
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -110,22 +135,51 @@ fun PortalScreenContent(portals: List<Portal>, modifier : Modifier = Modifier) {
             MapboxScreen()
         }
 
-        Column(
+        LazyColumn(
             horizontalAlignment = Alignment.CenterHorizontally,
         ){
-            portals.forEach { portal ->
-                Button(onClick = { /*TODO*/ marker(lat,lon)
-                    fetchStreetName(lat, lon) { streetName ->
-                        if (streetName != null) {
-                            Log.d("Street Name", streetName)
-                        } else {
-                            Log.d("Street Name", "Failed to fetch.")
+            Log.d("portais", portals.value.toString())
+            items(portals.value) { portal ->
+                var distance by remember { mutableStateOf(0f) }
+                marker(portal.lat, portal.lon)
+                Button(onClick = { /*TODO*/
+                    // testing
+//                    marker(portal.lat, portal.lon)
+                    // testing
+//                    fetchStreetName(lat, lon) { streetName ->
+//                        if (streetName != null) {
+//                            Log.d("Street Name", streetName)
+//                        } else {
+//                            Log.d("Street Name", "Failed to fetch.")
+//                        }
+//                    }
+
+                    //testing
+                    // Push a new portal to the "portals" node
+//                    val newPortalRef = portalsRef.push()
+//                    newPortalRef.setValue(portal)
+//                        .addOnSuccessListener {
+//                            println("Portal created successfully!")
+//                        }
+//                        .addOnFailureListener { e ->
+//                            println("Error creating portal: $e")
+//                        }
+
+
+                }) {
+                    LaunchedEffect(Unit) {
+                        while (true) {
+                            // Calculate the distance every second
+                            distance = calculateDistanceFromUser(portal.lat, portal.lon)
+
+                            // Wait for 1 second before updating again
+                            delay(1000L)
                         }
-                    }}) {
+                    }
                     Text(
-                       buildString {
-                            append("${portal.street} (${portal.distance} km)")
-                            if (portal.distance > 5) {
+                        buildString {
+                            append("${portal.street} (${"%.3f".format(distance)} km)")
+                            if (distance > 5) {
                                 append(" - ${stringResource(R.string.out_of_range)}")
                             }
                         }
@@ -140,6 +194,20 @@ fun PortalScreenContent(portals: List<Portal>, modifier : Modifier = Modifier) {
 fun MapboxScreen() {
     val mapViewportState = rememberMapViewportState()
 
+    portalsRef.addValueEventListener(object: ValueEventListener {
+
+        override fun onDataChange(snapshot: DataSnapshot) {
+            // This method is called once with the initial value and again
+            // whenever data at this location is updated.
+            //val teste = snapshot.getValue<Long>()!!
+            //Log.d(TAG, teste.toString())
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            Log.w(TAG, "Failed to read value.", error.toException())
+        }
+
+    })
     // Composable for Mapbox Map
     MapboxMap(
         Modifier.fillMaxSize(),
@@ -163,16 +231,14 @@ fun MapboxScreen() {
             mapView.location.addOnIndicatorPositionChangedListener { point ->
                 lat = point.latitude()
                 lon = point.longitude()
-                Log.d("distancia", calculateDistanceFromUser(38.756465, -9.1567217).toString())
             }
-            Log.d("lat", lat.toString())
         }
     }
 }
 
 fun marker(latitude: Double, longitude: Double) {
-    Log.d("lat", latitude.toString())
-    Log.d("long", longitude.toString())
+    Log.d("lat", lat.toString())
+    Log.d("lon", lon.toString())
     // Create an instance of the Annotation API and get the CircleAnnotationManager.
     val annotationApi = view?.annotations
     val circleAnnotationManager = annotationApi?.createCircleAnnotationManager()
@@ -202,7 +268,7 @@ fun calculateDistanceFromUser(
         longitude = lonTarget
     }
 
-    return startLocation.distanceTo(endLocation) // Distance in meters
+    return startLocation.distanceTo(endLocation) / 1000f // Distance in meters
 }
 
 //Auxiliar function to make the HTTP request for street name
@@ -249,4 +315,27 @@ fun getStreetName(
         Log.e("Mapbox", "Error fetching street name", e)
         null
     }
+}
+
+fun fetchPortalsFromFirebase(portalsState: MutableState<List<Portal>>) {
+
+    portalsRef.addValueEventListener(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            if (snapshot.exists()) {
+                val portalsList = mutableListOf<Portal>()
+
+                for (portalSnapshot in snapshot.children) {
+                    val portal = portalSnapshot.getValue(Portal::class.java)
+                    portal?.let { portalsList.add(it) }
+                }
+
+                // Update the MutableState with the fetched portals
+                portalsState.value = portalsList
+            }
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            println("Error fetching data: ${error.message}")
+        }
+    })
 }
