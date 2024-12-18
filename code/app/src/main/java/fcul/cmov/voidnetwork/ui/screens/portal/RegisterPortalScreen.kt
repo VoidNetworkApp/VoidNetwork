@@ -31,6 +31,7 @@ import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import fcul.cmov.voidnetwork.R
+import fcul.cmov.voidnetwork.ui.navigation.Screens
 import fcul.cmov.voidnetwork.ui.utils.ScreenWithTopBar
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 import java.io.File
@@ -41,7 +42,9 @@ import java.util.Objects
 @Composable
 fun RegisterPortalScreen(
     nav: NavController,
-    viewModel: PortalViewModel
+    viewModel: PortalViewModel,
+    latitude: Double?,
+    longitude: Double?
 ) {
     ScreenWithTopBar(
         title = stringResource(R.string.register_portal),
@@ -49,13 +52,20 @@ fun RegisterPortalScreen(
     ) { paddingValues ->
         RegisterPortalScreenContent(
             nav = nav,
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier.padding(paddingValues),
+            latitude = latitude,
+            longitude = longitude
         )
     }
 }
 
 @Composable
-fun RegisterPortalScreenContent(nav: NavController, modifier: Modifier = Modifier) {
+fun RegisterPortalScreenContent(
+    nav: NavController,
+    modifier: Modifier = Modifier,
+    latitude: Double?,
+    longitude: Double?
+) {
     val context = LocalContext.current
     val file = context.createImageFile()
     val uri = FileProvider.getUriForFile(
@@ -75,7 +85,6 @@ fun RegisterPortalScreenContent(nav: NavController, modifier: Modifier = Modifie
     ) {
         cameraLauncher.launch(uri)
     }
-
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -91,7 +100,9 @@ fun RegisterPortalScreenContent(nav: NavController, modifier: Modifier = Modifie
                 .background(Color.Black)
         )
 
-        Button(onClick = { /*TODO*/ }, enabled = false) {
+        Button(onClick = { if (latitude != null && longitude != null) { marker(latitude, longitude) }
+            nav.navigate(Screens.Main.route)
+                         }, enabled = true) {
             Text(stringResource(R.string.register_portal))
         }
         Text(stringResource(R.string.waiting_for_photo_verification))
