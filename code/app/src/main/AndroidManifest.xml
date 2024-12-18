@@ -39,6 +39,9 @@
                 android:resource="@xml/path_provider" />
         </provider>
 
+        <meta-data
+        android:name="com.mapbox.maps.token"
+        android:value="@string/mapbox_access_token" />
     </application>
 
 </manifest>
