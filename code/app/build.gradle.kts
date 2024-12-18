@@ -69,6 +69,10 @@ dependencies {
     implementation("com.google.firebase:firebase-database")
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-crashlytics-buildtools:3.0.2")
+    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("com.google.android.libraries.mapsplatform.transportation:transportation-consumer:3.0.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
@@ -77,4 +81,11 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+    //Mapbox
+    implementation("com.mapbox.maps:android:11.8.1")
+    implementation("com.mapbox.extension:maps-compose:11.8.1")
+
+    implementation("com.google.accompanist:accompanist-permissions:0.28.0")
+
 }
