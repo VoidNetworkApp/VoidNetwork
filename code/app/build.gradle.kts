@@ -82,10 +82,16 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+
     //Mapbox
     implementation("com.mapbox.maps:android:11.8.1")
     implementation("com.mapbox.extension:maps-compose:11.8.1")
 
     implementation("com.google.accompanist:accompanist-permissions:0.28.0")
+
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+    implementation("org.json:json:20210307")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
 }
