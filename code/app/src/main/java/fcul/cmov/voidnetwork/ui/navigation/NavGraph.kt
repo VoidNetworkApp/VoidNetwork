@@ -56,10 +56,16 @@ fun NavGraph(navController: NavHostController) {
                 id = id
             )
         }
-        composable(route = Screens.RegisterPortal.route) {
+        composable(route = Screens.RegisterPortal.route) { backStackEntry ->
+            // Extract arguments from the back stack entry
+            val latitude = backStackEntry.arguments?.getString("latitude")?.toDoubleOrNull()
+            val longitude = backStackEntry.arguments?.getString("longitude")?.toDoubleOrNull()
+
             RegisterPortalScreen(
                 nav = navController,
-                viewModel = portalViewModel
+                viewModel = portalViewModel,
+                latitude = latitude,
+                longitude = longitude
             )
         }
     }
