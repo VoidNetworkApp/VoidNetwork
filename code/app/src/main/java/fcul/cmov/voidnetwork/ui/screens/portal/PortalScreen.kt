@@ -21,10 +21,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -56,14 +52,15 @@ import org.json.JSONObject
 
 private var view: MapView? = null
 
+private var lat: Double = 0.0
+private var lon: Double = 0.0
+
 val portals = listOf(
     Portal("Rua das Flores", 2.1f),
     Portal("Avenida do Sol", 23.4f),
     Portal("Rua da Glória", 35.9f)
 )
 
-var lat: Double = 0.0
-var long: Double = 0.0
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,7 +73,7 @@ fun PortalScreen(
             FloatingActionButton(
                 onClick = {
                     val latitude = lat ?: 0.0
-                    val longitude = long ?: 0.0
+                    val longitude = lon ?: 0.0
                     nav.navigate(Screens.RegisterPortal.createRoute(latitude, longitude)) },
                 containerColor = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 60.dp),
@@ -117,8 +114,8 @@ fun PortalScreenContent(portals: List<Portal>, modifier : Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ){
             portals.forEach { portal ->
-                Button(onClick = { /*TODO*/ marker(lat,long)
-                    fetchStreetName(lat, long) { streetName ->
+                Button(onClick = { /*TODO*/ marker(lat,lon)
+                    fetchStreetName(lat, lon) { streetName ->
                         if (streetName != null) {
                             Log.d("Street Name", streetName)
                         } else {
@@ -165,16 +162,17 @@ fun MapboxScreen() {
             // Add a listener for position changes
             mapView.location.addOnIndicatorPositionChangedListener { point ->
                 lat = point.latitude()
-                long = point.longitude()
-                Log.d("lat", lat.toString())
-                Log.d("long", long.toString())
-                Log.d("distancia", calculateDistance(lat, long, 38.756465, -9.1567217).toString())
+                lon = point.longitude()
+                Log.d("distancia", calculateDistanceFromUser(38.756465, -9.1567217).toString())
             }
+            Log.d("lat", lat.toString())
         }
     }
 }
 
 fun marker(latitude: Double, longitude: Double) {
+    Log.d("lat", latitude.toString())
+    Log.d("long", longitude.toString())
     // Create an instance of the Annotation API and get the CircleAnnotationManager.
     val annotationApi = view?.annotations
     val circleAnnotationManager = annotationApi?.createCircleAnnotationManager()
@@ -191,18 +189,17 @@ fun marker(latitude: Double, longitude: Double) {
     circleAnnotationManager?.create(circleAnnotationOptions)
 }
 
-fun calculateDistance(
-    lat1: Double, lon1: Double,
-    lat2: Double, lon2: Double
+fun calculateDistanceFromUser(
+    latTarget: Double, lonTarget: Double
 ): Float {
     val startLocation = Location("start").apply {
-        latitude = lat1
-        longitude = lon1
+        latitude = lat
+        longitude = lon
     }
 
     val endLocation = Location("end").apply {
-        latitude = lat2
-        longitude = lon2
+        latitude = latTarget
+        longitude = lonTarget
     }
 
     return startLocation.distanceTo(endLocation) // Distance in meters
