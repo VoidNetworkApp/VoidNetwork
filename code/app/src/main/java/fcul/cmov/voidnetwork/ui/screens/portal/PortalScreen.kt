@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import com.mapbox.geojson.Point
 import com.mapbox.maps.MapView
@@ -46,6 +47,12 @@ import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.Portal
 import fcul.cmov.voidnetwork.ui.navigation.Screens
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.json.JSONObject
 
 private var view: MapView? = null
 
@@ -110,7 +117,14 @@ fun PortalScreenContent(portals: List<Portal>, modifier : Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ){
             portals.forEach { portal ->
-                Button(onClick = { /*TODO*/ marker(lat,long)}) {
+                Button(onClick = { /*TODO*/ marker(lat,long)
+                    fetchStreetName(lat, long) { streetName ->
+                        if (streetName != null) {
+                            Log.d("Street Name", streetName)
+                        } else {
+                            Log.d("Street Name", "Failed to fetch.")
+                        }
+                    }}) {
                     Text(
                        buildString {
                             append("${portal.street} (${portal.distance} km)")
@@ -128,7 +142,6 @@ fun PortalScreenContent(portals: List<Portal>, modifier : Modifier = Modifier) {
 @Composable
 fun MapboxScreen() {
     val mapViewportState = rememberMapViewportState()
-    var userLocation by remember { mutableStateOf<Location?>(null) }
 
     // Composable for Mapbox Map
     MapboxMap(
@@ -151,22 +164,17 @@ fun MapboxScreen() {
 
             // Add a listener for position changes
             mapView.location.addOnIndicatorPositionChangedListener { point ->
-                userLocation = Location("").apply {
-                    latitude = point.latitude()
-                    longitude = point.longitude()
-                    lat = latitude
-                    long = longitude
-                    Log.d("lat2", lat.toString())
-                    Log.d("long2", long.toString())
-                }
+                lat = point.latitude()
+                long = point.longitude()
+                Log.d("lat", lat.toString())
+                Log.d("long", long.toString())
+                Log.d("distancia", calculateDistance(lat, long, 38.756465, -9.1567217).toString())
             }
         }
     }
 }
 
 fun marker(latitude: Double, longitude: Double) {
-    Log.d("lat", latitude.toString())
-    Log.d("long", longitude.toString())
     // Create an instance of the Annotation API and get the CircleAnnotationManager.
     val annotationApi = view?.annotations
     val circleAnnotationManager = annotationApi?.createCircleAnnotationManager()
@@ -183,12 +191,65 @@ fun marker(latitude: Double, longitude: Double) {
     circleAnnotationManager?.create(circleAnnotationOptions)
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun PortalScreenPreview() {
-//    val fusedLocationClient = null
-//    PortalScreen(
-//        nav = NavController(LocalContext.current),
-//        fusedLocationClient = fusedLocationClient
-//    )
-//}
+fun calculateDistance(
+    lat1: Double, lon1: Double,
+    lat2: Double, lon2: Double
+): Float {
+    val startLocation = Location("start").apply {
+        latitude = lat1
+        longitude = lon1
+    }
+
+    val endLocation = Location("end").apply {
+        latitude = lat2
+        longitude = lon2
+    }
+
+    return startLocation.distanceTo(endLocation) // Distance in meters
+}
+
+//Auxiliar function to make the HTTP request for street name
+fun fetchStreetName(
+    latitude: Double,
+    longitude: Double,
+    onResult: (String?) -> Unit
+) {
+    // Launch Coroutine tied to lifecycle
+    view?.context?.let { context ->
+        (context as? androidx.lifecycle.LifecycleOwner)?.lifecycleScope?.launch {
+            val streetName = withContext(Dispatchers.IO) {
+                getStreetName(latitude, longitude, context)
+            }
+            onResult(streetName)
+        }
+    }
+}
+
+fun getStreetName(
+    latitude: Double,
+    longitude: Double,
+    context: android.content.Context
+): String? {
+    val accessToken = context.getString(R.string.mapbox_access_token)
+    val url = "https://api.mapbox.com/geocoding/v5/mapbox.places/$longitude,$latitude.json?access_token=$accessToken"
+
+    val client = OkHttpClient()
+
+    return try {
+        val request = Request.Builder().url(url).build()
+        client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                Log.e("Mapbox", "HTTP request failed: ${response.code}")
+                return null
+            }
+            val jsonResponse = JSONObject(response.body?.string() ?: "")
+            val features = jsonResponse.getJSONArray("features")
+            if (features.length() > 0) {
+                features.getJSONObject(0).optString("text") // Street name
+            } else null
+        }
+    } catch (e: Exception) {
+        Log.e("Mapbox", "Error fetching street name", e)
+        null
+    }
+}

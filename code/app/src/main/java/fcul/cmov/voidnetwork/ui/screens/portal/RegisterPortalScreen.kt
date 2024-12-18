@@ -3,7 +3,6 @@ package fcul.cmov.voidnetwork.ui.screens.portal
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -109,10 +108,8 @@ fun RegisterPortalScreenContent(
         Button(onClick = { val permissionCheckResult =
             ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA)
             if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
-                Log.d("TAG", "CORREU BEMMM")
                 cameraLauncher.launch(uri)
             } else {
-                Log.d("TAG", "DEU MERDAAA")
                 // Request a permission
                 permissionLauncher.launch(android.Manifest.permission.CAMERA)
             }
