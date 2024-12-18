@@ -36,7 +36,8 @@ fun HorizontalPager(
     ) {
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            userScrollEnabled = false
         ) { pageIndex ->
             screens.values.toList()[pageIndex] { targetPage ->
                 scope.launch {
