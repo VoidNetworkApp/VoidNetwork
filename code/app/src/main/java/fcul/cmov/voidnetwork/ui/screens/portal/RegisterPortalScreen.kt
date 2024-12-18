@@ -90,7 +90,7 @@ fun RegisterPortalScreenContent(
         verticalArrangement = Arrangement.SpaceEvenly,
     ) {
         AsyncImage(
-            model = "https://i.ibb.co/vzVc0v1/treeportal.png",
+            model = capturedImageUri,
             placeholder = painterResource(R.drawable.ic_launcher_foreground),
             error = painterResource(R.drawable.ic_launcher_foreground),
             contentDescription = stringResource(R.string.portal_captured_with_camera),
