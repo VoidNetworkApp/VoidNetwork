@@ -11,7 +11,7 @@ android {
     defaultConfig {
         applicationId = "fcul.cmov.voidnetwork"
         minSdk = 24
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -37,11 +37,11 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.3"
+    }
     buildFeatures {
         compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.3"
     }
     packaging {
         resources {
@@ -64,7 +64,6 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.7.5")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.navigation:navigation-compose:2.4.2")
-    implementation("io.coil-kt:coil-compose:2.4.0")
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-database")
     implementation("com.google.firebase:firebase-storage")
@@ -82,14 +81,21 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
+    // Coroutines
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
 
-    //Mapbox
+    // Camera
+    implementation("io.coil-kt.coil3:coil-compose:3.0.0-rc02")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.0-rc02")
+
+    // Mapbox
     implementation("com.mapbox.maps:android:11.8.1")
     implementation("com.mapbox.extension:maps-compose:11.8.1")
 
+    // Permissions
     implementation("com.google.accompanist:accompanist-permissions:0.28.0")
 
+    // Retrofit
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
     implementation("org.json:json:20210307")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")

@@ -142,7 +142,13 @@ fun PortalScreenContent(modifier: Modifier = Modifier) {
                     } else {
                         Log.d("Street Name", "Failed to fetch.")
                     }
-                }}) { }
+                }}) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = stringResource(R.string.add_portal),
+                    tint = Color.White
+                )
+            }
         }
 
         LazyColumn(
