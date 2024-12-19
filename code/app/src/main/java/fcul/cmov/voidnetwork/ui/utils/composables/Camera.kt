@@ -1,4 +1,4 @@
-package fcul.cmov.voidnetwork.ui.utils
+package fcul.cmov.voidnetwork.ui.utils.composables
 
 import android.Manifest
 import android.content.Context

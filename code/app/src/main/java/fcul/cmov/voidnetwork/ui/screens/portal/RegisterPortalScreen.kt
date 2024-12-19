@@ -17,9 +17,9 @@ import androidx.navigation.NavController
 import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.Coordinates
 import fcul.cmov.voidnetwork.ui.navigation.Screens
-import fcul.cmov.voidnetwork.ui.utils.CameraButton
-import fcul.cmov.voidnetwork.ui.utils.CameraPhoto
-import fcul.cmov.voidnetwork.ui.utils.ScreenWithTopBar
+import fcul.cmov.voidnetwork.ui.utils.composables.CameraButton
+import fcul.cmov.voidnetwork.ui.utils.composables.CameraPhoto
+import fcul.cmov.voidnetwork.ui.utils.composables.ScreenWithTopBar
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 
 @Composable

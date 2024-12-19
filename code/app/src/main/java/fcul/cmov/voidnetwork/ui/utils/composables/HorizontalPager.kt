@@ -1,4 +1,4 @@
-package fcul.cmov.voidnetwork.ui.utils
+package fcul.cmov.voidnetwork.ui.utils.composables
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
