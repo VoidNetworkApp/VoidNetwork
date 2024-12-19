@@ -1,6 +1,5 @@
 package fcul.cmov.voidnetwork.ui.viewmodels
 
-import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
 import android.util.Log
@@ -23,7 +22,7 @@ import com.mapbox.maps.plugin.annotation.generated.createCircleAnnotationManager
 import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.Coordinates
 import fcul.cmov.voidnetwork.domain.Portal
-import fcul.cmov.voidnetwork.ui.utils.createImageFile
+import fcul.cmov.voidnetwork.ui.utils.composables.createImageFile
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -115,10 +114,8 @@ class PortalViewModel : ViewModel() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
                     portals = snapshot.children.mapNotNull { it.getValue(Portal::class.java) }
-                    println(portals)
                 }
             }
-
             override fun onCancelled(error: DatabaseError) {
                 Log.e("PortalViewModel", "Error fetching data: ${error.message}")
             }
@@ -128,7 +125,9 @@ class PortalViewModel : ViewModel() {
     private fun listenToChangesFromFirebase() {
         portalsRef.addValueEventListener(object: ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                // TODO: update portals
+                if (snapshot.exists()) {
+                    portals = snapshot.children.mapNotNull { it.getValue(Portal::class.java) }
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {

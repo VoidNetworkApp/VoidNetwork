@@ -42,8 +42,8 @@ import androidx.navigation.NavController
 import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.Language
 import fcul.cmov.voidnetwork.ui.utils.MAX_MESSAGE_LENGTH
-import fcul.cmov.voidnetwork.ui.utils.ScreenWithTopBar
-import fcul.cmov.voidnetwork.ui.utils.rememberPressSequence
+import fcul.cmov.voidnetwork.ui.utils.composables.ScreenWithTopBar
+import fcul.cmov.voidnetwork.ui.utils.composables.rememberPressSequence
 import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel
 
 @Composable

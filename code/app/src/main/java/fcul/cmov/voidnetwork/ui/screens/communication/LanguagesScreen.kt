@@ -30,7 +30,7 @@ import androidx.navigation.NavController
 import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.Language
 import fcul.cmov.voidnetwork.ui.navigation.Screens
-import fcul.cmov.voidnetwork.ui.utils.ScreenWithTopBar
+import fcul.cmov.voidnetwork.ui.utils.composables.ScreenWithTopBar
 import fcul.cmov.voidnetwork.ui.utils.args
 import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel
 
