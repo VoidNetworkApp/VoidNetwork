@@ -1,10 +1,15 @@
-package fcul.cmov.voidnetwork.ui.utils
+package fcul.cmov.voidnetwork.ui.utils.composables
 
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import fcul.cmov.voidnetwork.ui.utils.LONG
+import fcul.cmov.voidnetwork.ui.utils.MAX_CODE_LENGTH
+import fcul.cmov.voidnetwork.ui.utils.MAX_INACTIVITY_DURATION
+import fcul.cmov.voidnetwork.ui.utils.MIN_PRESS_DURATION_SHORT_PRESS
+import fcul.cmov.voidnetwork.ui.utils.SHORT
 import kotlinx.coroutines.delay
 
 @Composable

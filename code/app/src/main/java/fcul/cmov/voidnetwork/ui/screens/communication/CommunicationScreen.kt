@@ -45,7 +45,7 @@ import fcul.cmov.voidnetwork.domain.Language
 import fcul.cmov.voidnetwork.domain.Portal
 import fcul.cmov.voidnetwork.repository.LanguagesRepository
 import fcul.cmov.voidnetwork.ui.navigation.Screens
-import fcul.cmov.voidnetwork.ui.utils.rememberPressSequence
+import fcul.cmov.voidnetwork.ui.utils.composables.rememberPressSequence
 import fcul.cmov.voidnetwork.ui.viewmodels.CommunicationViewModel
 import kotlinx.coroutines.delay
 
