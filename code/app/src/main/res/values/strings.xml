@@ -58,4 +58,5 @@
     <string name="actions">Actions</string>
     <string name="language_name">Language Name</string>
     <string name="save_changes">Save Changes</string>
+    <string name="capture_photo">Take Photo</string>
 </resources>

@@ -85,8 +85,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
 
     // Camera
-    implementation("io.coil-kt.coil3:coil-compose:3.0.0-rc02")
-    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.0-rc02")
+    implementation("io.coil-kt:coil-compose:2.5.0")
 
     // Mapbox
     implementation("com.mapbox.maps:android:11.8.1")

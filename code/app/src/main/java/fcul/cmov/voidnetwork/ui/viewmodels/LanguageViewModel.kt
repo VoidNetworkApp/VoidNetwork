@@ -18,10 +18,7 @@ import fcul.cmov.voidnetwork.ui.utils.MAX_MESSAGE_LENGTH
 class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel() {
     // handles language crud operations and selection
 
-    private val database by lazy { Firebase.database.reference }
-
-    private val languageDatabase
-        get() = database.child("languages")
+    private val languagesRef = Firebase.database.reference.child("languages")
 
     var languageSelected: Language? by mutableStateOf(null)
 
@@ -86,7 +83,7 @@ class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel(
     }
 
     private fun loadLanguagesFromFirebase() {
-        languageDatabase.get().addOnSuccessListener { dataSnapshot ->
+        languagesRef.get().addOnSuccessListener { dataSnapshot ->
             // get languages from database
             val languages = dataSnapshot.children.mapNotNull { it.getValue(Language::class.java) }
             // update languages in memory
@@ -95,7 +92,7 @@ class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel(
     }
 
     private fun addLanguageToFirebase(onCompleted: (String) -> Unit): String {
-        val newRef = languageDatabase.push()
+        val newRef = languagesRef.push()
         val newId = newRef.key ?: throw IllegalStateException("Failed to generate a new key for the language")
         val newLanguages = languages.get().count { it.name.startsWith("New Language") }
         val name = "New Language${if (newLanguages > 0) " ($newLanguages)" else ""}"
@@ -108,16 +105,16 @@ class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel(
     }
 
     private fun updateLanguageInFirebase(language: Language) {
-        languageDatabase.child(language.id).setValue(language)
+        languagesRef.child(language.id).setValue(language)
     }
 
     private fun deleteLanguageFromFirebase(id: String) {
-        languageDatabase.child(id).removeValue()
+        languagesRef.child(id).removeValue()
     }
 
     private fun listenToChangesFromFirebase() {
         // updates languages in memory when database changes
-        languageDatabase.addChildEventListener(object : ChildEventListener {
+        languagesRef.addChildEventListener(object : ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 val language = snapshot.getValue(Language::class.java)
                 requireNotNull(language) { "Language is null" }

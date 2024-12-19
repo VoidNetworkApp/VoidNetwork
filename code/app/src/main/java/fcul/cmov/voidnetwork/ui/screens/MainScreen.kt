@@ -6,11 +6,10 @@ import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.WifiTethering
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
-import com.google.android.gms.location.FusedLocationProviderClient
 import fcul.cmov.voidnetwork.ui.screens.communication.CommunicationScreen
-import fcul.cmov.voidnetwork.ui.utils.HorizontalPager
 import fcul.cmov.voidnetwork.ui.screens.musicplayer.MusicPlayerScreen
 import fcul.cmov.voidnetwork.ui.screens.portal.PortalScreen
+import fcul.cmov.voidnetwork.ui.utils.HorizontalPager
 import fcul.cmov.voidnetwork.ui.viewmodels.CommunicationViewModel
 import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel
 import fcul.cmov.voidnetwork.ui.viewmodels.MusicPlayerViewModel

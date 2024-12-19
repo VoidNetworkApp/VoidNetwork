@@ -32,6 +32,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import android.hardware.camera2.CameraCharacteristics
+import com.google.firebase.database.ktx.database
 
 
 class CommunicationViewModel(
@@ -42,7 +43,8 @@ class CommunicationViewModel(
     // handles touch and luminosity sending signals
     // handles vibration and flashlight receiving signals
 
-    private val messagingDatabase = Firebase.database.reference.child("messages")
+    private val messagesRef = Firebase.database.reference.child("messages")
+
     var lastMessage by mutableStateOf<Message?>(null)
 
     init {
@@ -62,11 +64,11 @@ class CommunicationViewModel(
             timestamp = System.currentTimeMillis(),
             sender = FirebaseAuth.getInstance().currentUser?.uid ?: "Unknown"
         )
-        messagingDatabase.push().setValue(payload)
+        messagesRef.push().setValue(payload)
     }
 
     private fun listenForSignals() {
-        messagingDatabase
+        messagesRef
             .orderByChild("timestamp")
             .startAt(System.currentTimeMillis().toDouble())
             .addChildEventListener(object : ChildEventListener {

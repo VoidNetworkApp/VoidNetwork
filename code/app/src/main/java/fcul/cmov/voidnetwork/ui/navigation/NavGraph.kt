@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import fcul.cmov.voidnetwork.domain.Coordinates
 import fcul.cmov.voidnetwork.ui.screens.MainScreen
 import fcul.cmov.voidnetwork.ui.screens.communication.LanguageScreen
 import fcul.cmov.voidnetwork.ui.screens.communication.LanguagesScreen
@@ -29,6 +30,7 @@ fun NavGraph(navController: NavHostController) {
     val communicationViewModel: CommunicationViewModel = viewModel(factory = factory)
     val portalViewModel: PortalViewModel = viewModel()
     val musicPlayerViewModel: MusicPlayerViewModel = viewModel()
+
     NavHost(
         navController = navController,
         startDestination = Screens.Main.route
@@ -57,15 +59,12 @@ fun NavGraph(navController: NavHostController) {
             )
         }
         composable(route = Screens.RegisterPortal.route) { backStackEntry ->
-            // Extract arguments from the back stack entry
-            val latitude = backStackEntry.arguments?.getString("latitude")?.toDoubleOrNull()
-            val longitude = backStackEntry.arguments?.getString("longitude")?.toDoubleOrNull()
-
+            val coordinatesStr = backStackEntry.arguments?.getString("coordinates")
+            val coordinates = Coordinates.fromString(coordinatesStr)
             RegisterPortalScreen(
                 nav = navController,
                 viewModel = portalViewModel,
-                latitude = latitude,
-                longitude = longitude
+                coordinates = coordinates
             )
         }
     }
