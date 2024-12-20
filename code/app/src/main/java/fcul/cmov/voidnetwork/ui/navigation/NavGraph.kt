@@ -14,9 +14,9 @@ import fcul.cmov.voidnetwork.ui.screens.communication.LanguageScreen
 import fcul.cmov.voidnetwork.ui.screens.communication.LanguagesScreen
 import fcul.cmov.voidnetwork.ui.screens.portal.RegisterPortalScreen
 import fcul.cmov.voidnetwork.ui.utils.getArgument
-import fcul.cmov.voidnetwork.ui.viewmodels.CommunicationViewModel
+import fcul.cmov.voidnetwork.ui.viewmodels.MessageSenderViewModel
 import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel
-import fcul.cmov.voidnetwork.ui.viewmodels.MusicPlayerViewModel
+import fcul.cmov.voidnetwork.ui.viewmodels.MessageReceiverViewModel
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 import fcul.cmov.voidnetwork.ui.viewmodels.factories.SharedViewModelFactory
 import fcul.cmov.voidnetwork.ui.viewmodels.repository.RepositoryViewModel
@@ -27,9 +27,9 @@ fun NavGraph(navController: NavHostController) {
     val languagesRepository: RepositoryViewModel = viewModel()
     val factory = remember { SharedViewModelFactory(application, languagesRepository) }
     val languageViewModel: LanguageViewModel = viewModel(factory = factory)
-    val communicationViewModel: CommunicationViewModel = viewModel(factory = factory)
+    val messageReceiverViewModel: MessageReceiverViewModel = viewModel(factory = factory)
+    val messageSenderViewModel: MessageSenderViewModel = viewModel(factory = factory)
     val portalViewModel: PortalViewModel = viewModel()
-    val musicPlayerViewModel: MusicPlayerViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -38,9 +38,9 @@ fun NavGraph(navController: NavHostController) {
         composable(route = Screens.Main.route) {
             MainScreen(
                 nav = navController,
-                communicationViewModel = communicationViewModel,
+                messageSenderViewModel = messageSenderViewModel,
                 portalViewModel = portalViewModel,
-                musicPlayerViewModel = musicPlayerViewModel,
+                messageReceiverViewModel = messageReceiverViewModel,
                 languageViewModel = languageViewModel
             )
         }
