@@ -1,6 +1,5 @@
 package fcul.cmov.voidnetwork.ui.screens.communication
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,13 +36,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.Language
-import fcul.cmov.voidnetwork.ui.utils.MAX_MESSAGE_LENGTH
+import fcul.cmov.voidnetwork.ui.utils.composables.TouchSignalMessage
 import fcul.cmov.voidnetwork.ui.utils.composables.ScreenWithTopBar
-import fcul.cmov.voidnetwork.ui.utils.composables.rememberPressSequence
 import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel
 
 @Composable
@@ -67,12 +64,12 @@ fun LanguageScreen(
         LanguageScreenContent(
             modifier = Modifier.padding(paddingValues),
             language = viewModel.getLanguage(id),
-            onDeleteMessage = { code -> viewModel.onDeleteMessageFromLanguage(id, code) },
+            onDeleteMessage = { code -> viewModel.deleteMessageFromLanguage(id, code) },
             onUpdateLanguageDictionary = { code, msg ->
-                viewModel.onUpdateLanguageDictionary(id, code, msg)
+                viewModel.updateLanguageDictionary(id, code, msg)
             },
             onDeleteLanguage = { viewModel.deleteLanguage(id) },
-            onEditLanguage = { viewModel.onEditLanguage(language.id, it) }
+            onEditLanguage = { viewModel.editLanguage(language.id, it) }
         )
     }
 }
@@ -114,8 +111,9 @@ fun LanguageScreenContent(
             modifier = Modifier.padding(20.dp)
         ) {
             if (isAddingMessage) {
-                AddMessageForm(
-                    onUpdateLanguageDictionary = { code, msg ->
+                TouchSignalMessage(
+                    submitText = stringResource(R.string.add_message),
+                    onSubmit = { code, msg ->
                         onUpdateLanguageDictionary(code, msg)
                         isAddingMessage = false
                     }
@@ -204,56 +202,6 @@ fun LanguageTopView(
                 contentDescription = stringResource(R.string.delete_language),
                 modifier = Modifier.size(24.dp)
             )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AddMessageForm(
-    onUpdateLanguageDictionary: (String, String) -> Unit
-) {
-    var message by rememberSaveable { mutableStateOf("") }
-    val (sequence, pressModifier, resetSequence) = rememberPressSequence()
-    Column(
-        modifier = Modifier.padding(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        TextField(
-            value = message,
-            onValueChange = { message = it.take(MAX_MESSAGE_LENGTH) },
-            label = { Text(stringResource(R.string.enter_translation)) },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Box(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.secondary)
-                .padding(16.dp)
-                .fillMaxWidth()
-                .then(pressModifier),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = stringResource(R.string.hold_or_tap),
-                color = MaterialTheme.colorScheme.onSecondary,
-                style = MaterialTheme.typography.bodyLarge
-            )
-        }
-        Text(
-            text = sequence,
-            fontSize = 40.sp,
-            modifier = Modifier.padding(0.dp)
-        )
-        Button(
-            onClick = {
-                onUpdateLanguageDictionary(sequence, message)
-                resetSequence()
-                message = ""
-            },
-            enabled = sequence.isNotBlank() && message.isNotBlank()
-        ) {
-            Text(text = stringResource(R.string.add_message))
         }
     }
 }

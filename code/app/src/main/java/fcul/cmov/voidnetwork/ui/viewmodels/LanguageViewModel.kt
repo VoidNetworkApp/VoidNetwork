@@ -27,6 +27,10 @@ class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel(
         listenToChangesFromFirebase()
     }
 
+    fun translate(signal: String): String? {
+        return languageSelected?.dictionary?.get(signal)
+    }
+
     fun getLanguage(id: String): Language {
         return languages[id]
     }
@@ -55,7 +59,7 @@ class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel(
         deleteLanguageFromFirebase(id)
     }
 
-    fun onEditLanguage(id: String, name: String) {
+    fun editLanguage(id: String, name: String) {
         require(id.isNotBlank()) { "Id must not be blank" }
         require(name.isNotBlank()) { "Name must not be blank" }
         require(name.length <= MAX_MESSAGE_LENGTH) { "Language name length must be less than $MAX_MESSAGE_LENGTH" }
@@ -66,17 +70,18 @@ class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel(
         updateLanguageInFirebase(updatedLanguage)
     }
 
-    fun onUpdateLanguageDictionary(id: String, code: String, msg: String) {7
+    fun updateLanguageDictionary(id: String, code: String, msg: String) {7
         require(id.isNotBlank()) { "Id must not be blank" }
         require(code.length <= MAX_CODE_LENGTH) { "Code length must be less than $MAX_CODE_LENGTH" }
         require(msg.length <= MAX_MESSAGE_LENGTH) { "Message length must be less than $MAX_MESSAGE_LENGTH" }
+        if (msg == "Unknown") return
 
         val language = getLanguage(id)
         val updatedLanguage = language.copy(dictionary = language.dictionary + (code to msg))
         updateLanguageInFirebase(updatedLanguage)
     }
 
-    fun onDeleteMessageFromLanguage(id: String, code: String) {
+    fun deleteMessageFromLanguage(id: String, code: String) {
         val language = getLanguage(id)
         val updatedLanguage = language.copy(dictionary = language.dictionary - code)
         updateLanguageInFirebase(updatedLanguage)

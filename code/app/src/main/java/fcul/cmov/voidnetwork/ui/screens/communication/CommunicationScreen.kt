@@ -45,18 +45,19 @@ import fcul.cmov.voidnetwork.domain.Language
 import fcul.cmov.voidnetwork.domain.Portal
 import fcul.cmov.voidnetwork.repository.LanguagesRepository
 import fcul.cmov.voidnetwork.ui.navigation.Screens
-import fcul.cmov.voidnetwork.ui.utils.composables.rememberPressSequence
-import fcul.cmov.voidnetwork.ui.viewmodels.CommunicationViewModel
+import fcul.cmov.voidnetwork.ui.utils.composables.LightSignalMessage
+import fcul.cmov.voidnetwork.ui.utils.composables.TouchSignalMessage
+import fcul.cmov.voidnetwork.ui.viewmodels.MessageSenderViewModel
 import kotlinx.coroutines.delay
-
-typealias SendSignalHandler = (language: String?, signal: String, mode: CommunicationMode) -> Unit
 
 @Composable
 fun CommunicationScreen(
     nav: NavController,
-    viewModel: CommunicationViewModel,
+    viewModel: MessageSenderViewModel,
     portalSelected: Portal?,
     languageSelected: Language?,
+    onTranslate: (String) -> String?,
+    onUpdateDictionary: (String, String) -> Unit,
     navigateToPage: (Int) -> Unit = {},
 ) {
     Column(
@@ -67,12 +68,12 @@ fun CommunicationScreen(
             fontSize = 40.sp,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(50.dp)
+            modifier = Modifier.padding(20.dp)
         )
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceEvenly
+            verticalArrangement = Arrangement.Center
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -87,17 +88,15 @@ fun CommunicationScreen(
                     portalSelected = portalSelected,
                     onPortalsClick = { navigateToPage(2) }
                 )
+                Spacer(Modifier.size(10.dp))
             }
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                viewModel.lastMessage?.let {
-                    Text("${it.signal}: ${it.translation}")
-                }
-                Spacer(Modifier.size(20.dp))
-                MessageView(languageSelected, viewModel::sendSignal)
-            }
-
+            MessageView(
+                languageSelected = languageSelected,
+                sendSignal = { viewModel.sendSignal(languageSelected?.id, it) },
+                onTranslate = onTranslate,
+                onUpdateDictionary = onUpdateDictionary,
+            )
+            Spacer(Modifier.size(10.dp))
         }
     }
 }
@@ -141,7 +140,9 @@ fun PortalSelectionView(
 @Composable
 fun MessageView(
     languageSelected: Language?,
-    sendSignal: SendSignalHandler,
+    sendSignal: (String) -> Unit,
+    onTranslate: (String) -> String?,
+    onUpdateDictionary: (String, String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var communicationMode: CommunicationMode by rememberSaveable { mutableStateOf(CommunicationMode.TOUCH)}
@@ -168,16 +169,22 @@ fun MessageView(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier
-                .fillMaxHeight(0.7f)
-                .fillMaxWidth(0.9f)
+                .fillMaxSize(0.9f)
                 .padding(10.dp)
                 .clip(RoundedCornerShape(20.dp))
                 .background(MaterialTheme.colorScheme.surface)
         ) {
+            val onSubmit = { sequence: String, message: String ->
+                onUpdateDictionary(sequence, message)
+                sendSignal(sequence)
+            }
             when (communicationMode) {
-                CommunicationMode.TOUCH -> TouchMessageView(languageSelected, sendSignal)
-                CommunicationMode.LIGHT -> LightMessageView(languageSelected, sendSignal)
-                CommunicationMode.AUTO -> AutomaticMessageView(languageSelected, sendSignal)
+                CommunicationMode.TOUCH ->
+                    TouchMessageView(onTranslate, onSubmit)
+                CommunicationMode.LIGHT ->
+                    LightMessageView(onTranslate, onSubmit)
+                CommunicationMode.AUTO ->
+                    AutomaticMessageView(languageSelected, sendSignal)
             }
         }
     }
@@ -185,82 +192,42 @@ fun MessageView(
 
 @Composable
 fun TouchMessageView(
-    languageSelected: Language?,
-    sendSignal: SendSignalHandler
+    onTranslate: (String) -> String?,
+    onSubmit: (String, String) -> Unit,
 ) {
-    val (sequence, pressModifier, resetSequence) = rememberPressSequence()
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ){
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(150.dp)
-                .clip(RoundedCornerShape(20.dp))
-                .background(MaterialTheme.colorScheme.primary)
-                .then(pressModifier),
-        ) {
-            Icon(
-                imageVector = Icons.Filled.TouchApp,
-                contentDescription = stringResource(R.string.touch),
-            )
-        }
-        Text(
-            text = sequence,
-            fontSize = 50.sp,
+        TouchSignalMessage(
+            submitText = stringResource(R.string.send),
+            onTranslate = onTranslate,
+            onSubmit = onSubmit
         )
-        Button(
-            onClick = {
-                sendSignal(
-                    languageSelected?.id,
-                    sequence,
-                    CommunicationMode.TOUCH
-                )
-                resetSequence()
-            }
-        ) {
-            Text(stringResource(R.string.send))
-        }
     }
 }
 
 @Composable
 fun LightMessageView(
-    languageSelected: Language?,
-    sendSignal: SendSignalHandler
+    onTranslate: (String) -> String?,
+    onSubmit: (String, String) -> Unit,
 ) {
-    // simulate light intensity changes TODO: remove later
-    var lightIntensity: Int by rememberSaveable { mutableStateOf(0) }
-    val lightColor = Color(255, 255, 255, lightIntensity * 255 / 100)
-    LaunchedEffect(lightIntensity) {
-        while (true) {
-            lightIntensity = (lightIntensity + 1) % 100
-            delay(1000)
-        }
-    }
-
-    Column {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(200.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(lightColor)
-        ) {
-            Icon(
-                imageVector = Icons.Filled.LightMode,
-                contentDescription = stringResource(R.string.touch),
-                tint = Color.Black
-            )
-        }
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ){
+        LightSignalMessage(
+            submitText = stringResource(R.string.send),
+            onTranslate = onTranslate,
+            onSubmit = onSubmit
+        )
     }
 }
 
 @Composable
 fun AutomaticMessageView(
     languageSelected: Language?,
-    sendSignal: SendSignalHandler
+    sendSignal: (String) -> Unit,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -274,13 +241,7 @@ fun AutomaticMessageView(
         if (languageSelected != null) {
             languageSelected.dictionary.forEach { (code, message) ->
                 Button(
-                    onClick = { 
-                        sendSignal(
-                            languageSelected.id,
-                            code,
-                            CommunicationMode.AUTO,
-                        )
-                    },
+                    onClick = { sendSignal(code) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 5.dp)
@@ -300,8 +261,10 @@ fun AutomaticMessageView(
 fun CommunicationScreenPreview() {
     CommunicationScreen(
         nav = NavController(LocalContext.current),
-        viewModel = CommunicationViewModel(LocalContext.current as Application, LanguagesRepository()),
+        viewModel = MessageSenderViewModel(LocalContext.current as Application, LanguagesRepository()),
         languageSelected = null,
-        portalSelected = null
+        portalSelected = null,
+        onTranslate = { null },
+        onUpdateDictionary = { _, _ -> }
     )
 }
