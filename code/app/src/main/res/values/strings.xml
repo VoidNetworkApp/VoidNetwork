@@ -59,4 +59,8 @@
     <string name="language_name">Language Name</string>
     <string name="save_changes">Save Changes</string>
     <string name="capture_photo">Take Photo</string>
+    <string name="luminosity">Luminosity</string>
+    <string name="recent_messages">Recent Messages</string>
+    <string name="no_messages">No messages</string>
+    <string name="unknown">Unknown</string>
 </resources>

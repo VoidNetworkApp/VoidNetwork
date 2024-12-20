@@ -1,9 +1,8 @@
 package fcul.cmov.voidnetwork.domain
 
 data class Signal(
-    val language: String?,
     val value: String,
-    val mode: CommunicationMode,
+    val language: String?,
     val timestamp: Long,
     val sender: String,
 )
