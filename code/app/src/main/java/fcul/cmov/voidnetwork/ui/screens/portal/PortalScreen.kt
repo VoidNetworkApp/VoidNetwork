@@ -55,6 +55,7 @@ private var view: MapView? = null
 fun PortalScreen(
     nav: NavController,
     viewModel: PortalViewModel,
+    navigateToPage: (Int) -> Unit = {},
 ) {
     Scaffold(
         floatingActionButton = {
@@ -80,10 +81,11 @@ fun PortalScreen(
             PortalScreenContent(
                 currentPosition = viewModel.currentPosition,
                 portals = viewModel.portals,
+                onSelectPortal = { viewModel.selectPortal(it); navigateToPage(1) },
                 onPositionChanged = { viewModel.currentPosition = it },
                 onAddMarker = { viewModel.addMarker(view, it) },
                 onRegisterPortal = { viewModel.registerPortal(view) },
-                modifier = Modifier.padding(paddingValues)
+                modifier = Modifier.padding(paddingValues),
             )
         }
     )
@@ -94,6 +96,7 @@ fun PortalScreen(
 fun PortalScreenContent(
     currentPosition: Coordinates,
     portals: List<Portal>,
+    onSelectPortal: (String) -> Unit,
     onPositionChanged: (Coordinates) -> Unit,
     onAddMarker: (Coordinates) -> Unit,
     onRegisterPortal: () -> Unit,
@@ -121,7 +124,7 @@ fun PortalScreenContent(
             items(portals) { portal ->
                 var distance by rememberSaveable { mutableStateOf(0f) }
                 onAddMarker(portal.coordinates)
-                Button(onClick = { /*TODO*/ }) {
+                Button(onClick = { onSelectPortal(portal.id) }) {
                     LaunchedEffect(Unit) {
                         while (true) { // calculate the distance every second
                             distance = calculateDistance(currentPosition, portal.coordinates)
@@ -130,9 +133,9 @@ fun PortalScreenContent(
                     }
                     Text(
                         buildString {
-                            append("${portal.street} (${"%.1f".format(distance)} km)")
+                            append("${portal.street} - ${"%.1f".format(distance)} km")
                             if (distance > 5) {
-                                append(" - ${stringResource(R.string.out_of_range)}")
+                                append(" (${stringResource(R.string.out_of_range)})")
                             }
                         }
                     )

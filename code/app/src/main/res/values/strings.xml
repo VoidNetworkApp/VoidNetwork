@@ -63,4 +63,11 @@
     <string name="recent_messages">Recent Messages</string>
     <string name="no_messages">No messages</string>
     <string name="unknown">Unknown</string>
+    <string name="in_upside_down">In Upside Down</string>
+    <string name="in_real_world">In Real World</string>
+    <string name="allow_receive_signals">Allow Receive Signals</string>
+    <string name="replace">Replace</string>
+    <string name="signal_already_in_dictionary">Signal Already in Use</string>
+    <string name="replace_signal_question">The signal \'{signal}\' is already in use for the message \'{message}\'</string>
+    <string name="do_you_want_to_replace_it">Do you want to replace it?</string>
 </resources>

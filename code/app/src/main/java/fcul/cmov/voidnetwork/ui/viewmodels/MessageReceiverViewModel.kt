@@ -23,10 +23,13 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.database
 import fcul.cmov.voidnetwork.domain.CommunicationMode
+import fcul.cmov.voidnetwork.domain.Language
 import fcul.cmov.voidnetwork.domain.Message
 import fcul.cmov.voidnetwork.repository.LanguagesRepository
+import fcul.cmov.voidnetwork.storage.AppSettings
 import fcul.cmov.voidnetwork.ui.utils.INTERVAL_DURATION
 import fcul.cmov.voidnetwork.ui.utils.LONG_DURATION
+import fcul.cmov.voidnetwork.ui.utils.MAX_RECENT_MESSAGES
 import fcul.cmov.voidnetwork.ui.utils.SHORT
 import fcul.cmov.voidnetwork.ui.utils.SHORT_DURATION
 import fcul.cmov.voidnetwork.ui.utils.getCurrentUser
@@ -41,11 +44,13 @@ class MessageReceiverViewModel(
 ) : AndroidViewModel(application) {
 
     private val messagesRef = Firebase.database.reference.child("messages")
+    private val settings by lazy { AppSettings(application) }
 
     var messages by mutableStateOf(emptyList<Message>())
         private set
 
     init {
+        loadMessagesFromFirebase()
         listenForSignals()
     }
 
@@ -62,14 +67,15 @@ class MessageReceiverViewModel(
             .addChildEventListener(object : ChildEventListener {
                 override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                     val messagePayload = snapshot.value as? Map<*, *> ?: throw IllegalArgumentException("Invalid message payload")
-                    val sender = messagePayload["sender"] as? String ?: throw IllegalArgumentException("Invalid sender")
-                    if (sender == getCurrentUser()?.uid) return // ignore own messages
-                    val signal = messagePayload["value"] as? String ?: throw IllegalArgumentException("Invalid signal")
-                    val language = messagePayload["language"] as? String
-                    val message = language?.let { languages[it].dictionary[signal] } ?: "Unknown"
-                    messages = messages + Message(signal, message)
-                    viewModelScope.launch {
-                        emitSynchronizedSignals(signal)
+                    val message = Message.fromMap(
+                        map = messagePayload,
+                        onTranslate = { language, signal -> languages[language].dictionary[signal] }
+                    ) ?: return
+                    messages = (messages + message).takeLast(MAX_RECENT_MESSAGES)
+                    if (settings.allowReceiveSignals) {
+                        viewModelScope.launch {
+                            emitSynchronizedSignals(message.signal)
+                        }
                     }
                 }
 
@@ -83,6 +89,21 @@ class MessageReceiverViewModel(
                     Log.e("CommunicationViewModel", "Error receiving signals", error.toException())
                 }
             })
+    }
+
+    private fun loadMessagesFromFirebase() {
+        messagesRef
+            .limitToLast(MAX_RECENT_MESSAGES)
+            .get()
+            .addOnSuccessListener { dataSnapshot ->
+                this.messages = dataSnapshot.children.mapNotNull { snapshot ->
+                    val messagePayload = snapshot.value as? Map<*, *> ?: return@mapNotNull null
+                    Message.fromMap(
+                        map = messagePayload,
+                        onTranslate = { language, signal -> languages[language].dictionary[signal] }
+                    )
+                }
+            }
     }
 
     private suspend fun emitSynchronizedSignals(signal: String) {

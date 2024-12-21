@@ -51,10 +51,11 @@ fun MainScreen(
                     navigateToPage = navigateToPage
                 )
             },
-            Icons.Filled.LocationOn to {
+            Icons.Filled.LocationOn to { navigateToPage ->
                 PortalScreen(
                     nav = nav,
-                    viewModel = portalViewModel
+                    viewModel = portalViewModel,
+                    navigateToPage = navigateToPage
                 )
             }
         )

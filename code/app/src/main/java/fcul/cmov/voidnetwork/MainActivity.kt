@@ -22,25 +22,40 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setupPermissions()
+        setContent {
+            VoidNetworkTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    val navController = rememberNavController()
+                    NavGraph(navController = navController)
+                }
+            }
+        }
+    }
+
+    private fun setupPermissions() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         val locationPermissionRequest = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
-        ) { permissions -> when {
-            permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false)
+        ) { permissions ->
+            when {
+                permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false)
                 -> {
-                // Precise location access granted.
-            }
-            permissions.getOrDefault(
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                false) -> {
-                // Only approximate location access granted.
-            }
-            else -> {
-                // No location access granted.
+                    // Precise location access granted.
+                }
+                permissions.getOrDefault(
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    false) -> {
+                    // Only approximate location access granted.
+                }
+                else -> {
+                    // No location access granted.
+                }
             }
         }
-        }
-
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -56,17 +71,6 @@ class MainActivity : ComponentActivity() {
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 )
             )
-        }
-        setContent {
-            VoidNetworkTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    val navController = rememberNavController()
-                    NavGraph(navController = navController)
-                }
-            }
         }
     }
 }

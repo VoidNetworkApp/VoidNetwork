@@ -1,9 +1,11 @@
 package fcul.cmov.voidnetwork.ui.viewmodels
 
+import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
@@ -12,14 +14,17 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import fcul.cmov.voidnetwork.domain.Language
 import fcul.cmov.voidnetwork.repository.LanguagesRepository
+import fcul.cmov.voidnetwork.storage.AppSettings
 import fcul.cmov.voidnetwork.ui.utils.MAX_CODE_LENGTH
 import fcul.cmov.voidnetwork.ui.utils.MAX_MESSAGE_LENGTH
 
-class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel() {
-    // handles language crud operations and selection
+class LanguageViewModel(
+    application: Application,
+    private val languages: LanguagesRepository
+) : AndroidViewModel(application) {
 
     private val languagesRef = Firebase.database.reference.child("languages")
-
+    private val settings by lazy { AppSettings(application) }
     var languageSelected: Language? by mutableStateOf(null)
 
     init {
@@ -53,6 +58,7 @@ class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel(
 
     fun selectLanguage(id: String) {
         languageSelected = getLanguage(id)
+        settings.languageSelected = id
     }
 
     fun deleteLanguage(id: String) {
@@ -93,6 +99,7 @@ class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel(
             val languages = dataSnapshot.children.mapNotNull { it.getValue(Language::class.java) }
             // update languages in memory
             this.languages.load(languages)
+            languageSelected = languages.firstOrNull { it.id == settings.languageSelected }
         }
     }
 
