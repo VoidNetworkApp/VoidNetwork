@@ -15,13 +15,7 @@ import fcul.cmov.voidnetwork.repository.LanguagesRepository
 import fcul.cmov.voidnetwork.ui.utils.getCurrentUser
 
 
-class MessageSenderViewModel(
-    application: Application,
-    private val languages: LanguagesRepository
-) : AndroidViewModel(application) {
-    // central logic for sending signal messages and receiving translated messages
-    // handles touch and luminosity sending signals
-    // handles vibration and flashlight receiving signals
+class MessageSenderViewModel(application: Application) : AndroidViewModel(application) {
 
     private val messagesRef = Firebase.database.reference.child("messages")
 

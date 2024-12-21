@@ -1,5 +1,6 @@
 package fcul.cmov.voidnetwork.ui.viewmodels
 
+import android.app.Application
 import android.content.Context
 import android.net.Uri
 import android.util.Log
@@ -7,7 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.FileProvider
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -22,45 +23,43 @@ import com.mapbox.maps.plugin.annotation.generated.createCircleAnnotationManager
 import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.Coordinates
 import fcul.cmov.voidnetwork.domain.Portal
+import fcul.cmov.voidnetwork.storage.AppSettings
 import fcul.cmov.voidnetwork.ui.utils.composables.createImageFile
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
 
-class PortalViewModel : ViewModel() {
-    // handles portal selection
-    // handles portal registration with camera and vision api
-    // gets the portal locations (coordinates and street names)
+class PortalViewModel(application: Application) : AndroidViewModel(application) {
 
     private val portalsRef = Firebase.database.reference.child("portals")
 
     var portals by mutableStateOf<List<Portal>>(emptyList())
-    val portalSelected by mutableStateOf<Portal?>(null)
+    var portalSelected by mutableStateOf<Portal?>(null)
     var capturedImageUri by mutableStateOf<Uri?>(null)
     var currentPosition by mutableStateOf(Coordinates(0.0, 0.0))
+    private val settings by lazy { AppSettings(application) }
 
     init {
         fetchPortalsFromFirebase()
         listenToChangesFromFirebase()
     }
 
-    fun createImageUri(context: Context) {
-        val imageFile = context.createImageFile()
-        capturedImageUri = FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.provider",
-            imageFile
-        )
+    fun selectPortal(id: String) {
+        portalSelected = portals.firstOrNull { it.id == id }
+        settings.portalSelected = id
     }
 
     fun registerPortal(view: MapView?) {
         if (view == null) return
         getStreetName(view, currentPosition) { street ->
             if (street == null) return@getStreetName
-            val newPortalRef = portalsRef.push()
-            val portal = Portal(street, currentPosition)
-            newPortalRef.setValue(portal)
+            val newRef = portalsRef.push()
+            val newId = newRef.key ?: throw IllegalStateException("Failed to generate a new key for the portal")
+            val portal = Portal(newId, street, currentPosition)
+            newRef.setValue(portal)
         }
     }
 
@@ -76,6 +75,15 @@ class PortalViewModel : ViewModel() {
         circleAnnotationManager?.create(circleAnnotationOptions)
     }
 
+    fun createImageUri(context: Context) {
+        val imageFile = context.createImageFile()
+        capturedImageUri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.provider",
+            imageFile
+        )
+    }
+
     private fun getStreetName(
         view: MapView,
         coordinates: Coordinates,
@@ -86,14 +94,21 @@ class PortalViewModel : ViewModel() {
             val accessToken = view.context.getString(R.string.mapbox_access_token)
             val url = "https://api.mapbox.com/geocoding/v5/mapbox.places/$longitude,$latitude.json?access_token=$accessToken"
             val client = OkHttpClient()
+
             try {
-                val request = Request.Builder().url(url).build()
-                client.newCall(request).execute().use { response ->
-                    if (!response.isSuccessful) {
-                        Log.e("Mapbox", "HTTP request failed: ${response.code}")
+                val response = withContext(Dispatchers.IO) {
+                    val request = Request.Builder().url(url).build()
+                    client.newCall(request).execute()
+                }
+
+                response.use {
+                    if (!it.isSuccessful) {
+                        Log.e("Mapbox", "HTTP request failed: ${it.code}")
                         onResult(null)
+                        return@launch
                     }
-                    val jsonResponse = JSONObject(response.body?.string() ?: "")
+
+                    val jsonResponse = JSONObject(it.body?.string() ?: "")
                     val features = jsonResponse.getJSONArray("features")
                     if (features.length() > 0) {
                         val streetName = features.getJSONObject(0).optString("text")
@@ -109,11 +124,13 @@ class PortalViewModel : ViewModel() {
         }
     }
 
+
     private fun fetchPortalsFromFirebase() {
         portalsRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
                     portals = snapshot.children.mapNotNull { it.getValue(Portal::class.java) }
+                    portalSelected = portals.firstOrNull { it.id == settings.portalSelected }
                 }
             }
             override fun onCancelled(error: DatabaseError) {
