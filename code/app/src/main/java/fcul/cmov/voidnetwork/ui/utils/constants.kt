@@ -1,8 +1,8 @@
 package fcul.cmov.voidnetwork.ui.utils
 
 // Signal Communication Constants
-const val SHORT = "-"
-const val LONG = "_"
+const val SHORT = '-'
+const val LONG = '_'
 const val MAX_MESSAGE_LENGTH = 20
 const val MAX_LANGUAGE_NAME_LENGTH = 20
 const val MAX_CODE_LENGTH = 15

@@ -85,7 +85,7 @@ fun MessageItem(
             Text(message.toString())
         }
         Text(
-            text = timeAgo(message.timestamp),
+            text = timeAgo(message.timestamp!!),
             style = MaterialTheme.typography.titleSmall
         )
     }

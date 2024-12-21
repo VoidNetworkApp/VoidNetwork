@@ -9,7 +9,9 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
         android:name=".VoidNetworkApplication"
         android:allowBackup="true"
@@ -40,6 +42,10 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/path_provider" />
         </provider>
+        <service
+            android:name=".services.MessageReceiverForegroundService"
+            android:foregroundServiceType="dataSync"
+            android:exported="true" />
 
         <meta-data
         android:name="com.mapbox.maps.token"

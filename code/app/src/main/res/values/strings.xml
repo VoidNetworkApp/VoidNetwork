@@ -70,4 +70,7 @@
     <string name="signal_already_in_dictionary">Signal Already in Use</string>
     <string name="replace_signal_question">The signal \'{signal}\' is already in use for the message \'{message}\'</string>
     <string name="do_you_want_to_replace_it">Do you want to replace it?</string>
+    <string name="listening_for_signals">Listening for Signals</string>
+    <string name="receiving_messages">Receiving Messages</string>
+    <string name="new_signal_received">New Signal Received</string>
 </resources>
