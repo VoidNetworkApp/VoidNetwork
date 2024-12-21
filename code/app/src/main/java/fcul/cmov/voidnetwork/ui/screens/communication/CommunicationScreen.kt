@@ -49,7 +49,7 @@ import fcul.cmov.voidnetwork.ui.navigation.Screens
 import fcul.cmov.voidnetwork.ui.utils.composables.LightSignalMessage
 import fcul.cmov.voidnetwork.ui.utils.composables.Popup
 import fcul.cmov.voidnetwork.ui.utils.composables.TouchSignalMessage
-import fcul.cmov.voidnetwork.ui.utils.composables.rememberSaveablePopupState
+import fcul.cmov.voidnetwork.ui.utils.composables.rememberUpdateDictionaryWithConfirmation
 import fcul.cmov.voidnetwork.ui.utils.composables.rememberUpsideDownState
 import fcul.cmov.voidnetwork.ui.viewmodels.MessageSenderViewModel
 
@@ -64,9 +64,8 @@ fun CommunicationScreen(
     navigateToPage: (Int) -> Unit = {},
 ) {
     val inUpsideDown = rememberUpsideDownState()
-    val replaceSignalPopupState = rememberSaveablePopupState()
-    var onConfirm by remember { mutableStateOf({}) }
-    var existingMessage by remember{ mutableStateOf<Message?>(null) }
+    val (replaceSignalPopup, onUpdateDictionaryWithConfirmation) =
+        rememberUpdateDictionaryWithConfirmation(languageSelected, onUpdateDictionary)
 
     Box(modifier = Modifier.fillMaxSize()) {
         AllowReceiveSignalsButton(
@@ -74,13 +73,7 @@ fun CommunicationScreen(
                 .align(Alignment.TopEnd)
                 .padding(20.dp)
         )
-        if (replaceSignalPopupState.isVisible) {
-            ReplaceSignalPopup(
-                existingMessage = existingMessage!!,
-                onConfirm = onConfirm,
-                onClose = replaceSignalPopupState::hide
-            )
-        }
+        replaceSignalPopup()
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxSize()
@@ -120,21 +113,7 @@ fun CommunicationScreen(
                     languageSelected = languageSelected,
                     sendSignal = { viewModel.sendSignal(languageSelected?.id, it) },
                     onTranslate = onTranslate,
-                    onUpdateDictionary = { signal, message ->
-                        if (message.isBlank()) return@MessageView
-                        val handler = { onUpdateDictionary(signal, message) }
-                        val translation = languageSelected?.dictionary?.get(signal)
-                        if (languageSelected != null &&
-                            !replaceSignalPopupState.isVisible &&
-                            translation != message
-                        ){
-                            onConfirm = handler
-                            existingMessage = Message(signal, translation)
-                            replaceSignalPopupState.show()
-                        } else {
-                            handler()
-                        }
-                    },
+                    onUpdateDictionary = onUpdateDictionaryWithConfirmation,
                 )
                 Spacer(Modifier.size(10.dp))
             }

@@ -6,11 +6,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import fcul.cmov.voidnetwork.ui.utils.LONG
-import fcul.cmov.voidnetwork.ui.utils.MAX_CODE_LENGTH
-import fcul.cmov.voidnetwork.ui.utils.MAX_INACTIVITY_DURATION
+import fcul.cmov.voidnetwork.ui.utils.MAX_SIGNAL_LENGTH
 import fcul.cmov.voidnetwork.ui.utils.MIN_CODE_DURATION_SHORT
 import fcul.cmov.voidnetwork.ui.utils.SHORT
-import kotlinx.coroutines.delay
 
 @Composable
 fun rememberTouchSequence(): Triple<String, Modifier, () -> Unit> {
@@ -23,7 +21,7 @@ fun rememberTouchSequence(): Triple<String, Modifier, () -> Unit> {
         Modifier.pointerInput(Unit) {
             detectTapGestures(
                 onPress = {
-                    if (sequence.length >= MAX_CODE_LENGTH) sequence = ""
+                    if (sequence.length >= MAX_SIGNAL_LENGTH) sequence = ""
                     pressStartTime = System.currentTimeMillis()
                     tryAwaitRelease()
                     val pressDuration = System.currentTimeMillis() - pressStartTime

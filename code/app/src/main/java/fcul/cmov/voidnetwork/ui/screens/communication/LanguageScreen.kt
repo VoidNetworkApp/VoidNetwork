@@ -41,6 +41,7 @@ import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.Language
 import fcul.cmov.voidnetwork.ui.utils.composables.TouchSignalMessage
 import fcul.cmov.voidnetwork.ui.utils.composables.ScreenWithTopBar
+import fcul.cmov.voidnetwork.ui.utils.composables.rememberUpdateDictionaryWithConfirmation
 import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel
 
 @Composable
@@ -65,8 +66,8 @@ fun LanguageScreen(
             modifier = Modifier.padding(paddingValues),
             language = viewModel.getLanguage(id),
             onDeleteMessage = { code -> viewModel.deleteMessageFromLanguage(id, code) },
-            onUpdateLanguageDictionary = { code, msg ->
-                viewModel.updateLanguageDictionary(id, code, msg)
+            onUpdateDictionary = { signal, message ->
+                viewModel.updateLanguageDictionary(id, signal, message)
             },
             onDeleteLanguage = { viewModel.deleteLanguage(id) },
             onEditLanguage = { viewModel.editLanguage(language.id, it) }
@@ -77,13 +78,16 @@ fun LanguageScreen(
 @Composable
 fun LanguageScreenContent(
     language: Language,
-    onUpdateLanguageDictionary: (String, String) -> Unit,
+    onUpdateDictionary: (String, String) -> Unit,
     onDeleteMessage: (String) -> Unit,
     onDeleteLanguage: () -> Unit,
     onEditLanguage: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var isAddingMessage by rememberSaveable { mutableStateOf(false) }
+    val (replaceSignalPopup, onUpdateDictionaryWithConfirmation) =
+        rememberUpdateDictionaryWithConfirmation(language, onUpdateDictionary)
+    replaceSignalPopup()
     Column(
         modifier = modifier.fillMaxHeight().verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -113,8 +117,8 @@ fun LanguageScreenContent(
             if (isAddingMessage) {
                 TouchSignalMessage(
                     submitText = stringResource(R.string.add_message),
-                    onSubmit = { code, msg ->
-                        onUpdateLanguageDictionary(code, msg)
+                    onSubmit = { signal, msg ->
+                        onUpdateDictionaryWithConfirmation(signal, msg)
                         isAddingMessage = false
                     },
                     messageRequired = true
