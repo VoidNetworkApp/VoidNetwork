@@ -65,8 +65,9 @@ fun CommunicationScreen(
 ) {
     val inUpsideDown = rememberUpsideDownState()
     val replaceSignalPopupState = rememberSaveablePopupState()
-    var onConfirm by remember { mutableStateOf({ }) }
-    var existingMessage by remember{ mutableStateOf<Message?>(null)}
+    var onConfirm by remember { mutableStateOf({}) }
+    var existingMessage by remember{ mutableStateOf<Message?>(null) }
+
     Box(modifier = Modifier.fillMaxSize()) {
         AllowReceiveSignalsButton(
             modifier = Modifier
@@ -75,7 +76,7 @@ fun CommunicationScreen(
         )
         if (replaceSignalPopupState.isVisible) {
             ReplaceSignalPopup(
-                existingMessage = existingMessage,
+                existingMessage = existingMessage!!,
                 onConfirm = onConfirm,
                 onClose = replaceSignalPopupState::hide
             )
@@ -128,7 +129,7 @@ fun CommunicationScreen(
                             translation != message
                         ){
                             onConfirm = handler
-                            existingMessage = Message(signal, translation, 0L)
+                            existingMessage = Message(signal, translation)
                             replaceSignalPopupState.show()
                         } else {
                             handler()
@@ -143,11 +144,10 @@ fun CommunicationScreen(
 
 @Composable
 fun ReplaceSignalPopup(
-    existingMessage: Message?,
+    existingMessage: Message,
     onConfirm: () -> Unit,
     onClose: () -> Unit
 ) {
-    requireNotNull(existingMessage)
     Popup(
         title = stringResource(R.string.signal_already_in_dictionary),
         onClose = onClose,
@@ -186,6 +186,7 @@ fun AllowReceiveSignalsButton(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val settings by remember { mutableStateOf(AppSettings(context)) }
     var allowReceiveSignals by rememberSaveable { mutableStateOf(settings.allowReceiveSignals) }
+
     IconButton(
         modifier = modifier,
         onClick = {

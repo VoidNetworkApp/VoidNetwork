@@ -19,13 +19,11 @@ import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel
 import fcul.cmov.voidnetwork.ui.viewmodels.MessageReceiverViewModel
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 import fcul.cmov.voidnetwork.ui.viewmodels.factories.SharedViewModelFactory
-import fcul.cmov.voidnetwork.ui.viewmodels.repository.RepositoryViewModel
 
 @Composable
 fun NavGraph(navController: NavHostController) {
     val application = LocalContext.current.applicationContext as Application
-    val languagesRepository: RepositoryViewModel = viewModel()
-    val factory = remember { SharedViewModelFactory(application, languagesRepository) }
+    val factory = remember { SharedViewModelFactory(application) }
     val languageViewModel: LanguageViewModel = viewModel(factory = factory)
     val messageReceiverViewModel: MessageReceiverViewModel = viewModel(factory = factory)
     val messageSenderViewModel: MessageSenderViewModel = viewModel(factory = factory)
