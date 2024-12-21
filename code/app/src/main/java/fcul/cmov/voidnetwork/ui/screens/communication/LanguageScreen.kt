@@ -116,7 +116,8 @@ fun LanguageScreenContent(
                     onSubmit = { code, msg ->
                         onUpdateLanguageDictionary(code, msg)
                         isAddingMessage = false
-                    }
+                    },
+                    messageRequired = true
                 )
             }
             Button(onClick = { isAddingMessage = !isAddingMessage }) {

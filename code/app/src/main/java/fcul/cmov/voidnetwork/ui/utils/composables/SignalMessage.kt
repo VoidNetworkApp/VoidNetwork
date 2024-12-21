@@ -48,13 +48,13 @@ fun SignalMessage(
     submitText: String,
     icon: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    messageRequired: Boolean = false,
     onTranslate: (String) -> String? = { null },
     color: Color = MaterialTheme.colorScheme.primary,
 ) {
-    val unknown = stringResource(R.string.unknown)
     LaunchedEffect(sequence) {
         onMessageChange(
-            if (sequence.isNotBlank()) onTranslate(sequence) ?: unknown else ""
+            if (sequence.isNotBlank()) onTranslate(sequence) ?: "" else ""
         )
     }
 
@@ -103,7 +103,7 @@ fun SignalMessage(
         )
         Button(
             onClick = { onSubmit(sequence, message) },
-            enabled = sequence.isNotBlank() && message.isNotBlank()
+            enabled = sequence.isNotBlank() && (!messageRequired || message.isNotBlank())
         ) {
             Text(text = submitText)
         }
@@ -115,6 +115,7 @@ fun TouchSignalMessage(
     submitText: String,
     onSubmit: (String, String) -> Unit,
     onTranslate: (String) -> String? = { null },
+    messageRequired: Boolean = false,
 ) {
     var message by rememberSaveable { mutableStateOf("") }
     val (sequence, pressModifier, resetSequence) = rememberTouchSequence()
@@ -136,6 +137,7 @@ fun TouchSignalMessage(
             )
         },
         modifier = pressModifier,
+        messageRequired = messageRequired
     )
 }
 
