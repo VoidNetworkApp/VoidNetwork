@@ -39,12 +39,12 @@ fun MainScreen(
                     portalSelected = portalViewModel.portalSelected,
                     languageSelected = languageViewModel.languageSelected,
                     onTranslate = { languageViewModel.translate(it) },
-                    onUpdateDictionary = { code, msg ->
+                    onUpdateDictionary = { signal, message ->
                         languageViewModel.languageSelected?.let {
                             languageViewModel.updateLanguageDictionary(
                                 id = it.id,
-                                code = code,
-                                msg = msg
+                                signal = signal,
+                                message = message
                             )
                         }
                     },
