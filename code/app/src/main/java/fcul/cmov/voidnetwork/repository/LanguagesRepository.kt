@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import fcul.cmov.voidnetwork.domain.Language
 
-class LanguagesRepository {
+object LanguagesRepository {
     private var languages by mutableStateOf<List<Language>>(emptyList())
 
     operator fun plusAssign(language: Language) {

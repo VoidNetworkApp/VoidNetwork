@@ -20,7 +20,6 @@ import fcul.cmov.voidnetwork.ui.utils.MAX_MESSAGE_LENGTH
 
 class LanguageViewModel(
     application: Application,
-    private val languages: LanguagesRepository
 ) : AndroidViewModel(application) {
 
     private val languagesRef = Firebase.database.reference.child("languages")
@@ -37,7 +36,7 @@ class LanguageViewModel(
     }
 
     fun getLanguage(id: String): Language {
-        return languages[id]
+        return LanguagesRepository[id]
     }
 
     fun getLanguageOrNull(id: String): Language? {
@@ -49,7 +48,7 @@ class LanguageViewModel(
     }
 
     fun getLanguages(): List<Language> {
-        return languages.get()
+        return LanguagesRepository.get()
     }
 
     fun addLanguage(onCompleted: (String) -> Unit) {
@@ -98,7 +97,7 @@ class LanguageViewModel(
             // get languages from database
             val languages = dataSnapshot.children.mapNotNull { it.getValue(Language::class.java) }
             // update languages in memory
-            this.languages.load(languages)
+            LanguagesRepository.load(languages)
             languageSelected = languages.firstOrNull { it.id == settings.languageSelected }
         }
     }
@@ -106,7 +105,7 @@ class LanguageViewModel(
     private fun addLanguageToFirebase(onCompleted: (String) -> Unit): String {
         val newRef = languagesRef.push()
         val newId = newRef.key ?: throw IllegalStateException("Failed to generate a new key for the language")
-        val newLanguages = languages.get().count { it.name.startsWith("New Language") }
+        val newLanguages = LanguagesRepository.get().count { it.name.startsWith("New Language") }
         val name = "New Language${if (newLanguages > 0) " ($newLanguages)" else ""}"
         val newLanguage = Language(newId, name, emptyMap())
         newRef.setValue(newLanguage)
@@ -130,14 +129,14 @@ class LanguageViewModel(
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 val language = snapshot.getValue(Language::class.java)
                 requireNotNull(language) { "Language is null" }
-                languages += language
+                LanguagesRepository += language
             }
 
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
                 val language = snapshot.getValue(Language::class.java)
                 requireNotNull(language) { "Language is null" }
-                synchronized(languages) {
-                    languages.update(language)
+                synchronized(LanguagesRepository) {
+                    LanguagesRepository.update(language)
                     if (languageSelected?.id == language.id) {
                         languageSelected = language
                     }
@@ -147,8 +146,8 @@ class LanguageViewModel(
             override fun onChildRemoved(snapshot: DataSnapshot) {
                 val language = snapshot.getValue(Language::class.java)
                 requireNotNull(language) { "Language is null" }
-                synchronized(languages) {
-                    languages -= language
+                synchronized(LanguagesRepository) {
+                    LanguagesRepository -= language
                     if (languageSelected?.id == language.id) {
                         languageSelected = null
                     }
