@@ -6,7 +6,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -15,8 +14,10 @@ import com.google.firebase.ktx.Firebase
 import fcul.cmov.voidnetwork.domain.Language
 import fcul.cmov.voidnetwork.repository.LanguagesRepository
 import fcul.cmov.voidnetwork.storage.AppSettings
-import fcul.cmov.voidnetwork.ui.utils.MAX_CODE_LENGTH
+import fcul.cmov.voidnetwork.ui.utils.LONG
+import fcul.cmov.voidnetwork.ui.utils.MAX_SIGNAL_LENGTH
 import fcul.cmov.voidnetwork.ui.utils.MAX_MESSAGE_LENGTH
+import fcul.cmov.voidnetwork.ui.utils.SHORT
 
 class LanguageViewModel(
     application: Application,
@@ -75,20 +76,20 @@ class LanguageViewModel(
         updateLanguageInFirebase(updatedLanguage)
     }
 
-    fun updateLanguageDictionary(id: String, code: String, msg: String) {7
+    fun updateLanguageDictionary(id: String, signal: String, message: String) {7
         require(id.isNotBlank()) { "Id must not be blank" }
-        require(code.length <= MAX_CODE_LENGTH) { "Code length must be less than $MAX_CODE_LENGTH" }
-        require(msg.length <= MAX_MESSAGE_LENGTH) { "Message length must be less than $MAX_MESSAGE_LENGTH" }
-        if (msg == "Unknown") return
-
+        require(signal.length <= MAX_SIGNAL_LENGTH) { "Signal length must be less than $MAX_SIGNAL_LENGTH" }
+        require(message.length <= MAX_MESSAGE_LENGTH) { "Message length must be less than $MAX_MESSAGE_LENGTH" }
+        require(signal.all { it == SHORT || it == LONG }) { "Signal must be composed of $SHORT and $LONG symbols" }
+        if (message == "Unknown") return
         val language = getLanguage(id)
-        val updatedLanguage = language.copy(dictionary = language.dictionary + (code to msg))
+        val updatedLanguage = language.copy(dictionary = language.dictionary + (signal to message))
         updateLanguageInFirebase(updatedLanguage)
     }
 
-    fun deleteMessageFromLanguage(id: String, code: String) {
+    fun deleteMessageFromLanguage(id: String, signal: String) {
         val language = getLanguage(id)
-        val updatedLanguage = language.copy(dictionary = language.dictionary - code)
+        val updatedLanguage = language.copy(dictionary = language.dictionary - signal)
         updateLanguageInFirebase(updatedLanguage)
     }
 
