@@ -11,6 +11,7 @@ import fcul.cmov.voidnetwork.domain.Message
 import fcul.cmov.voidnetwork.repository.LanguagesRepository
 import fcul.cmov.voidnetwork.repository.MessagesRepository
 import fcul.cmov.voidnetwork.services.MessageReceiverForegroundService
+import fcul.cmov.voidnetwork.storage.AppSettings
 import fcul.cmov.voidnetwork.ui.utils.emitSynchronizedSignals
 import kotlinx.coroutines.launch
 
@@ -23,8 +24,6 @@ class MessageReceiverViewModel(
 
     init {
         loadMessagesFromFirebase()
-        val intent = Intent(application, MessageReceiverForegroundService::class.java)
-        application.startService(intent)
     }
 
     fun replayMessage(message: Message) {

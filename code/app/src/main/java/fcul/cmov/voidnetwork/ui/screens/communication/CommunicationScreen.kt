@@ -85,10 +85,11 @@ fun CommunicationScreen(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(20.dp)
             )
+            Spacer(Modifier.size(20.dp))
             Column(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Top
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -98,16 +99,17 @@ fun CommunicationScreen(
                         if (inUpsideDown) stringResource(R.string.in_upside_down)
                         else stringResource(R.string.in_real_world)
                     )
+                    Spacer(Modifier.size(20.dp))
                     LanguageView(
                         languageSelected = languageSelected?.name ?: stringResource(R.string.no_language_selected),
                         onLanguageSelection = { nav.navigate(Screens.Languages.route) },
                     )
-                    Spacer(Modifier.size(10.dp))
+                    Spacer(Modifier.size(5.dp))
                     PortalSelectionView(
                         portalSelected = portalSelected,
                         onPortalsClick = { navigateToPage(2) }
                     )
-                    Spacer(Modifier.size(10.dp))
+                    Spacer(Modifier.size(5.dp))
                 }
                 MessageView(
                     languageSelected = languageSelected,
@@ -115,7 +117,7 @@ fun CommunicationScreen(
                     onTranslate = onTranslate,
                     onUpdateDictionary = onUpdateDictionaryWithConfirmation,
                 )
-                Spacer(Modifier.size(10.dp))
+                Spacer(Modifier.size(5.dp))
             }
         }
     }
@@ -243,8 +245,7 @@ fun MessageView(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .fillMaxHeight(0.8f)
+                .fillMaxSize(0.9f)
                 .padding(10.dp)
                 .clip(RoundedCornerShape(20.dp))
                 .background(MaterialTheme.colorScheme.surface)
