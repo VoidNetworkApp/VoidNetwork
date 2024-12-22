@@ -13,11 +13,12 @@ import fcul.cmov.voidnetwork.domain.Message
 import fcul.cmov.voidnetwork.domain.Signal
 import fcul.cmov.voidnetwork.repository.LanguagesRepository
 import fcul.cmov.voidnetwork.ui.utils.getCurrentUser
+import fcul.cmov.voidnetwork.ui.utils.getMessages
 
 
 class MessageSenderViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val messagesRef = Firebase.database.reference.child("messages")
+    private val messagesRef = Firebase.database.getMessages()
 
     fun sendSignal(
         language: String?,

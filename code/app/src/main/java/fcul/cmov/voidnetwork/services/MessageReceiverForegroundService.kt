@@ -11,7 +11,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
@@ -26,10 +25,18 @@ import fcul.cmov.voidnetwork.repository.LanguagesRepository
 import fcul.cmov.voidnetwork.repository.MessagesRepository
 import fcul.cmov.voidnetwork.ui.utils.emitSynchronizedSignals
 import fcul.cmov.voidnetwork.ui.utils.getCurrentUser
+import fcul.cmov.voidnetwork.ui.utils.getMessages
+
+private const val CHANNEL_ID = "signals_channel"
+private const val CHANNEL_NAME = "Signals Channel"
+private const val NOTIFICATION_ID = 1
+private const val LISTENING_NOTIFICATION_TITLE = "Listening for Signals"
+private const val LISTENING_NOTIFICATION_TEXT = "Service is running..."
+private const val RECEIVED_SIGNAL_NOTIFICATION_TITLE = "New Signal Received!"
 
 class MessageReceiverForegroundService : Service() {
 
-    private val messagesRef = Firebase.database.reference.child("messages")
+    private val messagesRef = Firebase.database.getMessages()
     private val scope = CoroutineScope(Dispatchers.IO)
     private lateinit var settings: AppSettings
 
@@ -42,11 +49,9 @@ class MessageReceiverForegroundService : Service() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channelId = "signals_channel"
-            val channelName = "Signals Channel"
             val channel = NotificationChannel(
-                channelId,
-                channelName,
+                CHANNEL_ID,
+                CHANNEL_NAME,
                 NotificationManager.IMPORTANCE_LOW
             )
             val notificationManager = getSystemService(NotificationManager::class.java)
@@ -55,15 +60,19 @@ class MessageReceiverForegroundService : Service() {
     }
 
     private fun startForegroundService() {
-        val notification = NotificationCompat.Builder(this, "signals_channel")
-            .setContentTitle("Listening for Signals")
-            .setContentText("Service is running...")
+        val pendingIntent = getNewMainActivityIntent()
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle(LISTENING_NOTIFICATION_TITLE)
+            .setContentText(LISTENING_NOTIFICATION_TEXT)
             .setSmallIcon(R.mipmap.ic_launcher_foreground)
             .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setContentIntent(pendingIntent)
             .build()
-        startForeground(1, notification)
+        startForeground(NOTIFICATION_ID, notification)
         listenForSignals()
     }
+
+
 
     private fun listenForSignals() {
         messagesRef.orderByChild("timestamp")
@@ -76,7 +85,7 @@ class MessageReceiverForegroundService : Service() {
                         onTranslate = { language, signal ->
                             LanguagesRepository[language].dictionary[signal]
                         }
-                    ) ?: return
+                    )
                     MessagesRepository += message
                     if (message.sender == getCurrentUser()?.uid) return // ignore own messages
                     scope.launch {
@@ -88,7 +97,6 @@ class MessageReceiverForegroundService : Service() {
                         }
                     }
                 }
-
                 override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
                 override fun onChildRemoved(snapshot: DataSnapshot) {}
                 override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
@@ -98,18 +106,21 @@ class MessageReceiverForegroundService : Service() {
             })
     }
 
-    private fun showNotification(message: Message) {
-        val channelId = "signals_channel"
+    private fun getNewMainActivityIntent(): PendingIntent {
         val intent = Intent(this, MainActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        val pendingIntent = PendingIntent.getActivity(
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return PendingIntent.getActivity(
             this, 0, intent,
-            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+    }
 
-        val notification = NotificationCompat.Builder(this, channelId)
-            .setContentTitle("New Signal Received!")
+    private fun showNotification(message: Message) {
+        val pendingIntent = getNewMainActivityIntent()
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle(RECEIVED_SIGNAL_NOTIFICATION_TITLE)
             .setContentText(message.toString())
+            .setAutoCancel(true)
             .setAutoCancel(true)
             .setSmallIcon(R.mipmap.ic_launcher_foreground)
             .setContentIntent(pendingIntent)
@@ -121,4 +132,5 @@ class MessageReceiverForegroundService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
+
 }

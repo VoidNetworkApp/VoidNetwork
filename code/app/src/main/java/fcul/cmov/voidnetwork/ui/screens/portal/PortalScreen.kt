@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,8 +49,6 @@ import fcul.cmov.voidnetwork.ui.utils.calculateDistance
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 import kotlinx.coroutines.delay
 
-private var view: MapView? = null
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PortalScreen(
@@ -57,6 +56,7 @@ fun PortalScreen(
     viewModel: PortalViewModel,
     navigateToPage: (Int) -> Unit = {},
 ) {
+    var mapView by remember { mutableStateOf<MapView?>(null) }
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -79,21 +79,22 @@ fun PortalScreen(
         floatingActionButtonPosition = FabPosition.End, // bottom-right
         content = { paddingValues ->
             PortalScreenContent(
+                onUpdateMapView = { mapView = it },
                 currentPosition = viewModel.currentPosition,
                 portals = viewModel.portals,
                 onSelectPortal = { viewModel.selectPortal(it); navigateToPage(1) },
                 onPositionChanged = { viewModel.currentPosition = it },
-                onAddMarker = { viewModel.addMarker(view, it) },
-                onRegisterPortal = { viewModel.registerPortal(view) },
+                onAddMarker = { viewModel.addMarker(mapView, it) },
+                onRegisterPortal = { viewModel.registerPortal(mapView) },
                 modifier = Modifier.padding(paddingValues),
             )
         }
     )
-
 }
 
 @Composable
 fun PortalScreenContent(
+    onUpdateMapView: (MapView) -> Unit,
     currentPosition: Coordinates,
     portals: List<Portal>,
     onSelectPortal: (String) -> Unit,
@@ -109,7 +110,10 @@ fun PortalScreenContent(
     ) {
         Text(stringResource(R.string.upside_down_portals))
         Box(Modifier.size(350.dp)) {
-            MapboxScreen(onPositionChanged = onPositionChanged)
+            MapboxScreen(
+                onUpdateMapView = onUpdateMapView,
+                onPositionChanged = onPositionChanged
+            )
             Button(onClick = onRegisterPortal) {
                 Icon(
                     imageVector = Icons.Filled.Add,
@@ -118,19 +122,15 @@ fun PortalScreenContent(
                 )
             }
         }
-        LazyColumn(
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ){
+
+        LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
             items(portals) { portal ->
-                var distance by rememberSaveable { mutableStateOf(0f) }
+                var distance by remember { mutableStateOf(0f) }
+                LaunchedEffect(currentPosition, portal.coordinates) {
+                    distance = calculateDistance(currentPosition, portal.coordinates)
+                }
                 onAddMarker(portal.coordinates)
                 Button(onClick = { onSelectPortal(portal.id) }) {
-                    LaunchedEffect(Unit) {
-                        while (true) { // calculate the distance every second
-                            distance = calculateDistance(currentPosition, portal.coordinates)
-                            delay(1000L)
-                        }
-                    }
                     Text(
                         buildString {
                             append("${portal.street} - ${"%.1f".format(distance)} km")
@@ -147,6 +147,7 @@ fun PortalScreenContent(
 
 @Composable
 fun MapboxScreen(
+    onUpdateMapView: (MapView) -> Unit,
     onPositionChanged: (Coordinates) -> Unit,
 ) {
     val mapViewportState = rememberMapViewportState()
@@ -155,19 +156,14 @@ fun MapboxScreen(
         mapViewportState = mapViewportState,
     ) {
         MapEffect(Unit) { mapView ->
-            // enable location puck
+            onUpdateMapView(mapView)
             mapView.location.updateSettings {
                 locationPuck = createDefault2DPuck(withBearing = true)
                 enabled = true
                 puckBearing = PuckBearing.COURSE
                 puckBearingEnabled = true
             }
-            view = mapView
-
-            // transition to follow the user's puck
             mapViewportState.transitionToFollowPuckState()
-
-            // listener for position changes
             mapView.location.addOnIndicatorPositionChangedListener { point ->
                 val coordinates = Coordinates(point.latitude(), point.longitude())
                 onPositionChanged(coordinates)
@@ -175,4 +171,3 @@ fun MapboxScreen(
         }
     }
 }
-
