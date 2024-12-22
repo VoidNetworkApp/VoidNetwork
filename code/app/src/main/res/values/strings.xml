@@ -1,14 +1,10 @@
 <resources>
     <string name="app_name">Void Network</string>
     <string name="mapbox_access_token">sk.eyJ1IjoibWNhcmRvc285NCIsImEiOiJjbTRpdDM5bG4wNmRiMmtyM3Z0cW0xamNmIn0.ECJbNiR04gCmt4rkUHBbzQ</string>
-
-    <!-- languages -->
     <string name="add_language">Add Language</string>
     <string name="add_edit_language">Add/Edit Language</string>
     <string name="language_selection">Language Selection</string>
     <string name="select_language">Select Language</string>
-
-    <!-- messages -->
     <string name="send_auto_message">Send Automatic Message</string>
     <string name="send_manual_message">Send Manual Message</string>
     <string name="touch">Touch</string>
@@ -17,19 +13,12 @@
     <string name="automatic_message">Automatic Message</string>
     <string name="touch_message">Touch Message</string>
     <string name="light_message">Light Message</string>
-
-    <!-- portals -->
     <string name="no_portal_selected">No Portal Selected</string>
     <string name="portal_selected">Portal Selected</string>
     <string name="add_portal">Add Portal</string>
     <string name="register_portal">Register Portal</string>
     <string name="upside_down_portals">Upside Down Portals</string>
     <string name="portal_captured_with_camera">Portal Captured with Camera</string>
-
-    <!-- music player -->
-    <string name="music_player">Music Player</string>
-
-    <!-- others -->
     <string name="out_of_range">Out of Range</string>
     <string name="open_camera">Open Camera</string>
     <string name="waiting_for_photo_verification">Waiting for photo verification</string>
@@ -73,4 +62,5 @@
     <string name="listening_for_signals">Listening for Signals</string>
     <string name="receiving_messages">Receiving Messages</string>
     <string name="new_signal_received">New Signal Received</string>
+    <string name="message_sender_icon">Message Sender Icon</string>
 </resources>

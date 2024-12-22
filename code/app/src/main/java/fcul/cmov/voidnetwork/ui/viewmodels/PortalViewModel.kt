@@ -25,6 +25,7 @@ import fcul.cmov.voidnetwork.domain.Coordinates
 import fcul.cmov.voidnetwork.domain.Portal
 import fcul.cmov.voidnetwork.storage.AppSettings
 import fcul.cmov.voidnetwork.ui.utils.composables.createImageFile
+import fcul.cmov.voidnetwork.ui.utils.getPortals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -34,7 +35,7 @@ import org.json.JSONObject
 
 class PortalViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val portalsRef = Firebase.database.reference.child("portals")
+    private val portalsRef = Firebase.database.getPortals()
 
     var portals by mutableStateOf<List<Portal>>(emptyList())
     var portalSelected by mutableStateOf<Portal?>(null)

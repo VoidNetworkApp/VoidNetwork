@@ -14,7 +14,7 @@ data class Message(
     }
 
     companion object {
-        fun fromMap(map: Map<*, *>, onTranslate: (String, String) -> String?): Message? {
+        fun fromMap(map: Map<*, *>, onTranslate: (String, String) -> String?): Message {
             val sender = map["sender"] as? String ?: throw IllegalArgumentException("Invalid sender")
             val timestamp = map["timestamp"] as? Long ?: throw IllegalArgumentException("Invalid timestamp")
             val signal = map["value"] as? String ?: throw IllegalArgumentException("Invalid signal")

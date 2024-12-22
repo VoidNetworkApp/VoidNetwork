@@ -18,12 +18,13 @@ import fcul.cmov.voidnetwork.ui.utils.LONG
 import fcul.cmov.voidnetwork.ui.utils.MAX_SIGNAL_LENGTH
 import fcul.cmov.voidnetwork.ui.utils.MAX_MESSAGE_LENGTH
 import fcul.cmov.voidnetwork.ui.utils.SHORT
+import fcul.cmov.voidnetwork.ui.utils.getLanguages
 
 class LanguageViewModel(
     application: Application,
 ) : AndroidViewModel(application) {
 
-    private val languagesRef = Firebase.database.reference.child("languages")
+    private val languagesRef = Firebase.database.getLanguages()
     private val settings by lazy { AppSettings(application) }
     var languageSelected: Language? by mutableStateOf(null)
 
