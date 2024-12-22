@@ -12,14 +12,17 @@ import fcul.cmov.voidnetwork.repository.LanguagesRepository
 import fcul.cmov.voidnetwork.repository.MessagesRepository
 import fcul.cmov.voidnetwork.services.MessageReceiverForegroundService
 import fcul.cmov.voidnetwork.storage.AppSettings
+import fcul.cmov.voidnetwork.ui.utils.MAX_RECENT_MESSAGES
 import fcul.cmov.voidnetwork.ui.utils.emitSynchronizedSignals
+import fcul.cmov.voidnetwork.ui.utils.getCurrentUser
+import fcul.cmov.voidnetwork.ui.utils.getMessages
 import kotlinx.coroutines.launch
 
 class MessageReceiverViewModel(
     application: Application,
 ) : AndroidViewModel(application) {
 
-    private val messagesRef = Firebase.database.reference.child("messages")
+    private val messagesRef = Firebase.database.getMessages()
     val messages = MessagesRepository.messages
 
     init {
@@ -36,7 +39,7 @@ class MessageReceiverViewModel(
         messagesRef
             .get()
             .addOnSuccessListener { dataSnapshot ->
-                val initialMessages = dataSnapshot.children.mapNotNull { snapshot ->
+                val storedMessages = dataSnapshot.children.mapNotNull { snapshot ->
                     val messagePayload = snapshot.value as? Map<*, *> ?: return@mapNotNull null
                     Message.fromMap(
                         map = messagePayload,
@@ -45,7 +48,7 @@ class MessageReceiverViewModel(
                         }
                     )
                 }
-                MessagesRepository.load(initialMessages)
+                MessagesRepository.load(storedMessages.takeLast(MAX_RECENT_MESSAGES))
             }
             .addOnFailureListener {
                 Log.e("MessageReceiverService", "Failed to load initial messages", it)
