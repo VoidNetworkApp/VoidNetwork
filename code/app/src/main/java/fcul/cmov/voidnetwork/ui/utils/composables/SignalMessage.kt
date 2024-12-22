@@ -134,6 +134,7 @@ fun TouchSignalMessage(
             Icon(
                 imageVector = Icons.Filled.TouchApp,
                 contentDescription = stringResource(R.string.touch),
+                tint = Color.White
             )
         },
         modifier = pressModifier,
@@ -170,7 +171,8 @@ fun LightSignalMessage(
         icon = {
             Icon(
                 imageVector = Icons.Filled.Lightbulb,
-                contentDescription = stringResource(R.string.light)
+                contentDescription = stringResource(R.string.light),
+                tint = Color.White
             )
         },
         color = Color.White.copy(alpha = animatedAlpha)

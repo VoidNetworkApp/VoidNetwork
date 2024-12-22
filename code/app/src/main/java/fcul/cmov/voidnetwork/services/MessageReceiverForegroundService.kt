@@ -36,14 +36,30 @@ class MessageReceiverForegroundService : Service() {
     override fun onCreate() {
         super.onCreate()
         settings = AppSettings(applicationContext)
+        createNotificationChannel()
         startForegroundService()
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channelId = "signals_channel"
+            val channelName = "Signals Channel"
+            val channel = NotificationChannel(
+                channelId,
+                channelName,
+                NotificationManager.IMPORTANCE_LOW
+            )
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager?.createNotificationChannel(channel)
+        }
     }
 
     private fun startForegroundService() {
         val notification = NotificationCompat.Builder(this, "signals_channel")
             .setContentTitle("Listening for Signals")
             .setContentText("Service is running...")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.mipmap.ic_launcher_foreground)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
         startForeground(1, notification)
         listenForSignals()
@@ -71,7 +87,6 @@ class MessageReceiverForegroundService : Service() {
                             emitSynchronizedSignals(message.signal)
                         }
                     }
-
                 }
 
                 override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
@@ -83,23 +98,8 @@ class MessageReceiverForegroundService : Service() {
             })
     }
 
-
     private fun showNotification(message: Message) {
-        val channelId = "default_channel"
-        val channelName = "Default Channel"
-
-        // Create notification channel for Android O and above
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                channelId,
-                channelName,
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-
-        // Create intent for notification tap action
+        val channelId = "signals_channel"
         val intent = Intent(this, MainActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         val pendingIntent = PendingIntent.getActivity(
@@ -107,17 +107,17 @@ class MessageReceiverForegroundService : Service() {
             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Build notification
-        val notificationBuilder = NotificationCompat.Builder(this, channelId)
+        val notification = NotificationCompat.Builder(this, channelId)
             .setContentTitle("New Signal Received!")
             .setContentText(message.toString())
             .setAutoCancel(true)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.mipmap.ic_launcher_foreground)
             .setContentIntent(pendingIntent)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .build()
 
-        // Show notification
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(0, notificationBuilder.build())
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        notificationManager?.notify(0, notification)
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
