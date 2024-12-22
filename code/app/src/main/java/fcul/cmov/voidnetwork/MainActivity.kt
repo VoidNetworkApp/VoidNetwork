@@ -18,6 +18,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import fcul.cmov.voidnetwork.ui.navigation.NavGraph
 import fcul.cmov.voidnetwork.ui.theme.VoidNetworkTheme
+import fcul.cmov.voidnetwork.ui.utils.composables.rememberUpsideDownState
 
 class MainActivity : ComponentActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -26,7 +27,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setupPermissions()
         setContent {
-            VoidNetworkTheme {
+            val inUpsideDown = rememberUpsideDownState()
+            VoidNetworkTheme(darkTheme = inUpsideDown) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

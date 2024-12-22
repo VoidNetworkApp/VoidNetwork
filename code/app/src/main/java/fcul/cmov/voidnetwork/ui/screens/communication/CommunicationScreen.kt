@@ -243,7 +243,8 @@ fun MessageView(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier
-                .fillMaxSize(0.9f)
+                .fillMaxWidth(0.9f)
+                .fillMaxHeight(0.8f)
                 .padding(10.dp)
                 .clip(RoundedCornerShape(20.dp))
                 .background(MaterialTheme.colorScheme.surface)
