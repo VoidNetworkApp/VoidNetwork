@@ -13,12 +13,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 
+const val INITIAL_DEFAULT_LUMINOSITY = 20f
+
+// the initial value of the luminosity only updates when a change is detected
+// so, when using the emulator, the initial value wont change until the values are manually updated
 @Composable
 fun rememberLuminosityProvider(): () -> Float {
     val context = LocalContext.current
     val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
     val lightSensor = remember { sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) }
-    var luminosity by remember { mutableStateOf(0f) }
+    var luminosity by remember { mutableStateOf(INITIAL_DEFAULT_LUMINOSITY) }
 
     DisposableEffect(Unit) {
         val listener = object : SensorEventListener {

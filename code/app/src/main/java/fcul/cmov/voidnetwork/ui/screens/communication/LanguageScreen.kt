@@ -168,7 +168,7 @@ fun LanguageTopView(
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.background,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+                    contentColor = MaterialTheme.colorScheme.onSecondary
                 )
             ) {
                 Icon(
@@ -186,7 +186,7 @@ fun LanguageTopView(
                 onClick = { isEditing = true },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.background,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+                    contentColor = MaterialTheme.colorScheme.onSecondary
                 )
             ) {
                 Icon(
@@ -199,7 +199,7 @@ fun LanguageTopView(
             onClick = onDeleteLanguage,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.background,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                contentColor = MaterialTheme.colorScheme.onSecondary
             )
         ) {
             Icon(
@@ -279,7 +279,7 @@ fun LanguageDictionary(
                         contentPadding = PaddingValues(4.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.background,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
+                            contentColor = MaterialTheme.colorScheme.onSecondary
                         ),
                         modifier = Modifier.weight(0.5f)
                     ) {
