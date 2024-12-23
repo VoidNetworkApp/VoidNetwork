@@ -139,12 +139,17 @@ fun ReplaceSignalPopup(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(text = stringResource(R.string.replace_signal_question)
-                .replace("{signal}", existingMessage.signal)
-                .replace("{message}", existingMessage.translation!!)
+            Text(
+                text = stringResource(R.string.replace_signal_question)
+                    .replace("{signal}", existingMessage.signal)
+                    .replace("{message}", existingMessage.translation!!),
+                color = MaterialTheme.colorScheme.onSecondary
             )
             Spacer(Modifier.size(10.dp))
-            Text(text = stringResource(R.string.do_you_want_to_replace_it))
+            Text(
+                text = stringResource(R.string.do_you_want_to_replace_it),
+                color = MaterialTheme.colorScheme.onSecondary
+            )
             Spacer(Modifier.size(10.dp))
             Row {
                 Button(onClick = {

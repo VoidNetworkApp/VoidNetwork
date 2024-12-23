@@ -38,7 +38,7 @@ fun Popup(
     ) {
         Card(
             modifier = modifier.fillMaxWidth().fillMaxHeight(0.5f),
-            colors = CardDefaults.cardColors(Color.Black.copy(alpha = 0.9f))
+            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
         ) {
             Column(
                 modifier = Modifier.padding(20.dp).fillMaxSize(),
@@ -48,7 +48,7 @@ fun Popup(
                 Text(
                     text = title,
                     fontSize = 22.sp,
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = MaterialTheme.colorScheme.onSecondary,
                     textAlign = TextAlign.Center
                 )
                 Row(
