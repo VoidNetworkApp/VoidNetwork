@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
         // Handle notification permission granted or denied
         if (granted) {
             // Start the foreground service
-            startForegroundService()
+            MessageReceiverForegroundService.start(this)
         } else {
             // Handle permission denial gracefully
         }
@@ -107,17 +107,12 @@ class MainActivity : ComponentActivity() {
                 notificationPermissionRequest.launch(Manifest.permission.POST_NOTIFICATIONS)
             } else {
                 // Permission already granted
-                startForegroundService()
+                MessageReceiverForegroundService.start(this)
             }
         } else {
             // No need to request for versions below Android 13
-            startForegroundService()
+            MessageReceiverForegroundService.start(this)
         }
-    }
-
-    private fun startForegroundService() {
-        val intent = Intent(this, MessageReceiverForegroundService::class.java)
-        ContextCompat.startForegroundService(this, intent)
     }
 }
 

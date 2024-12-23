@@ -9,7 +9,7 @@ fun timeAgo(timestamp: Long): String {
     val days = hours / 24
     val weeks = days / 7
     return when {
-        seconds < 0 -> "just now"
+        seconds <= 0 -> "just now"
         seconds < 60 -> "${seconds}s ago"
         minutes < 60 -> "${minutes}m ago"
         hours < 24 -> "${hours}h ago"
