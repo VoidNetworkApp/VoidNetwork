@@ -44,6 +44,7 @@ import fcul.cmov.voidnetwork.domain.CommunicationMode
 import fcul.cmov.voidnetwork.domain.Language
 import fcul.cmov.voidnetwork.domain.Message
 import fcul.cmov.voidnetwork.domain.Portal
+import fcul.cmov.voidnetwork.services.MessageReceiverForegroundService
 import fcul.cmov.voidnetwork.storage.AppSettings
 import fcul.cmov.voidnetwork.ui.navigation.Screens
 import fcul.cmov.voidnetwork.ui.utils.composables.LightSignalMessage
@@ -173,6 +174,11 @@ fun AllowReceiveSignalsButton(modifier: Modifier = Modifier) {
         onClick = {
             allowReceiveSignals = !allowReceiveSignals
             settings.allowReceiveSignals = allowReceiveSignals
+            if (allowReceiveSignals) {
+                MessageReceiverForegroundService.start(context)
+            } else {
+                MessageReceiverForegroundService.stop(context)
+            }
         },
     ) {
         Icon(
