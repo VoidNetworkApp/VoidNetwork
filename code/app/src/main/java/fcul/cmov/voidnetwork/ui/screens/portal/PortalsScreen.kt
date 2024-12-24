@@ -142,7 +142,7 @@ fun PortalsScreenContent(
                 verticalArrangement = Arrangement.Top,
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.onPrimary)
+                    .background(MaterialTheme.colorScheme.background)
                     .pointerInput(Unit) { detectTapGestures {} }
             ) {
                 Text(
@@ -163,9 +163,10 @@ fun PortalsScreenContent(
                         Row(
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
                         ) {
                             Button(
+                                modifier = Modifier.weight(1f),
                                 onClick = {
                                     localMapViewState.value?.mapboxMap?.setCamera(
                                         CameraOptions.Builder()
