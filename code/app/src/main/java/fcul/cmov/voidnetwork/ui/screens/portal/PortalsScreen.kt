@@ -1,15 +1,17 @@
 package fcul.cmov.voidnetwork.ui.screens.portal
 
-
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,8 +20,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -36,11 +40,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
+import com.mapbox.geojson.Point
+import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
+import com.mapbox.maps.Style
 import com.mapbox.maps.extension.compose.MapEffect
 import com.mapbox.maps.extension.compose.MapboxMap
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
@@ -54,8 +61,8 @@ import fcul.cmov.voidnetwork.ui.navigation.Screens
 import fcul.cmov.voidnetwork.ui.utils.MAX_DISTANCE_FROM_PORTAL
 import fcul.cmov.voidnetwork.ui.utils.args
 import fcul.cmov.voidnetwork.ui.utils.calculateDistance
+import fcul.cmov.voidnetwork.ui.utils.composables.rememberUpsideDownState
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PortalsScreen(
@@ -80,80 +87,119 @@ fun PortalsScreen(
             }
         },
         floatingActionButtonPosition = FabPosition.End, // bottom-right
-        content = { paddingValues ->
-            PortalsScreenContent(
-                onUpdateMapView = { mapView = it },
-                currentPosition = currentLocation,
-                portals = viewModel.portals,
-                onAddMarker = { viewModel.addMarker(mapView, it) },
-                onNavigateToPortal = { nav.navigate(Screens.Portal.route.args("id" to it)) },
-                modifier = Modifier.padding(paddingValues),
-            )
-        }
-    )
+    ) { paddingValues ->
+        PortalsScreenContent(
+            onUpdateMapView = { mapView = it },
+            currentPosition = currentLocation,
+            portals = viewModel.portals,
+            onNavigateToPortal = { nav.navigate(Screens.Portal.route.args("id" to it)) },
+            modifier = Modifier.padding(paddingValues),
+            viewModel = viewModel
+        )
+    }
 }
+
 @Composable
 fun PortalsScreenContent(
     onUpdateMapView: (MapView) -> Unit,
     currentPosition: Coordinates?,
     portals: List<Portal>,
-    onAddMarker: (Coordinates) -> Unit,
     onNavigateToPortal: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: PortalViewModel
 ) {
     var isPortalListVisible by remember { mutableStateOf(false) }
+    val localMapViewState = remember { mutableStateOf<MapView?>(null) }
+
     Box(
         modifier = modifier.fillMaxSize()
     ) {
         MapboxScreen(
-            onUpdateMapView = onUpdateMapView,
+            onUpdateMapView = { mapView ->
+                localMapViewState.value = mapView
+                onUpdateMapView(mapView)
+            },
             modifier = Modifier.fillMaxSize()
         )
+        LaunchedEffect(portals, localMapViewState.value) {
+            localMapViewState.value?.let { mapView ->
+                portals.forEach { portal ->
+                    viewModel.addPortalMarker(mapView, portal)
+                }
+            }
+        }
         AnimatedVisibility(
             visible = isPortalListVisible,
             enter = slideInVertically { fullHeight -> -fullHeight } + fadeIn(),
             exit = slideOutVertically { fullHeight -> -fullHeight } + fadeOut(),
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.4f)
+                .fillMaxHeight(0.35f)
                 .align(Alignment.TopCenter)
-                .zIndex(1f)
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.Top,
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.onPrimary),
+                    .background(MaterialTheme.colorScheme.onPrimary)
+                    .pointerInput(Unit) { detectTapGestures {} }
             ) {
                 Text(
                     text = stringResource(R.string.upside_down_portals),
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(10.dp)
+                    modifier = Modifier.padding(30.dp),
+                    color = MaterialTheme.colorScheme.onSecondary
                 )
                 LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
                     items(portals) { portal ->
                         var distance by remember { mutableStateOf<Float?>(null) }
+
                         LaunchedEffect(currentPosition, portal.coordinates) {
-                            distance = if (currentPosition != null) {
-                                calculateDistance(currentPosition, portal.coordinates)
-                            } else {
-                                null
+                            distance = currentPosition?.let {
+                                calculateDistance(it, portal.coordinates)
                             }
                         }
-                        onAddMarker(portal.coordinates)
-                        Button(onClick = { onNavigateToPortal(portal.id) }) {
-                            Text(
-                                buildString {
-                                    append(portal.street)
-                                    distance?.let {
-                                        append(" - ${"%.1f".format(distance)} km")
-                                        if (it > MAX_DISTANCE_FROM_PORTAL) {
-                                            append(" (${stringResource(R.string.out_of_range)})")
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Button(
+                                onClick = {
+                                    localMapViewState.value?.mapboxMap?.setCamera(
+                                        CameraOptions.Builder()
+                                            .center(Point.fromLngLat(portal.longitude, portal.latitude))
+                                            .zoom(16.0)
+                                            .build()
+                                    )
+                                }
+                            ) {
+                                Text(
+                                    buildString {
+                                        append(portal.street)
+                                        distance?.let {
+                                            append(" - ${"%.1f".format(it)} km")
+                                            if (it > MAX_DISTANCE_FROM_PORTAL) {
+                                                append(" (${stringResource(R.string.out_of_range)})")
+                                            }
                                         }
                                     }
-                                }
-                            )
+                                )
+                            }
+                            Button(
+                                onClick = { onNavigateToPortal(portal.id) },
+                                contentPadding = PaddingValues(0.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.background,
+                                    contentColor = MaterialTheme.colorScheme.onSecondary
+                                )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                    contentDescription = stringResource(R.string.navigate_to_portal),
+                                )
+                            }
                         }
                     }
                 }
@@ -162,9 +208,8 @@ fun PortalsScreenContent(
         Button(
             onClick = { isPortalListVisible = !isPortalListVisible },
             modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(16.dp)
-                .zIndex(2f)
+                .align(Alignment.BottomStart)
+                .padding(vertical = 80.dp, horizontal = 20.dp)
         ) {
             Text(
                 if (isPortalListVisible) stringResource(id = R.string.hide_portals)
@@ -174,19 +219,27 @@ fun PortalsScreenContent(
     }
 }
 
-
-
 @Composable
 fun MapboxScreen(
     onUpdateMapView: (MapView) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val mapViewportState = rememberMapViewportState()
+    val inUpsideDown = rememberUpsideDownState()
+    val mapViewState = remember { mutableStateOf<MapView?>(null) }
+
+    LaunchedEffect(inUpsideDown, mapViewState.value) {
+        mapViewState.value?.mapboxMap?.loadStyle(
+            if (inUpsideDown) Style.DARK else Style.STANDARD
+        )
+    }
+
     MapboxMap(
         modifier = modifier,
         mapViewportState = mapViewportState,
     ) {
         MapEffect(Unit) { mapView ->
+            mapViewState.value = mapView
             onUpdateMapView(mapView)
             mapView.location.updateSettings {
                 locationPuck = createDefault2DPuck(withBearing = true)
@@ -194,6 +247,9 @@ fun MapboxScreen(
                 puckBearing = PuckBearing.COURSE
                 puckBearingEnabled = true
             }
+            mapView.mapboxMap.loadStyle(
+                if (inUpsideDown) Style.DARK else Style.STANDARD
+            )
             mapViewportState.transitionToFollowPuckState()
         }
     }

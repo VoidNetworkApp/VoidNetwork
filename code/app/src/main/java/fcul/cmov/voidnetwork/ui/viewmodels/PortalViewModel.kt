@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.FileProvider
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -19,12 +20,16 @@ import com.mapbox.geojson.Point
 import com.mapbox.maps.MapView
 import com.mapbox.maps.plugin.annotation.annotations
 import com.mapbox.maps.plugin.annotation.generated.CircleAnnotationOptions
+import com.mapbox.maps.plugin.annotation.generated.PolygonAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createCircleAnnotationManager
+import com.mapbox.maps.plugin.annotation.generated.createPolygonAnnotationManager
 import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.Coordinates
 import fcul.cmov.voidnetwork.domain.Portal
-import fcul.cmov.voidnetwork.storage.AppSettings
+import fcul.cmov.voidnetwork.ui.theme.BloodRed
+import fcul.cmov.voidnetwork.ui.utils.MAX_DISTANCE_FROM_PORTAL
 import fcul.cmov.voidnetwork.ui.utils.composables.createImageFile
+import fcul.cmov.voidnetwork.ui.utils.createCirclePoints
 import fcul.cmov.voidnetwork.ui.utils.getPortals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -38,6 +43,8 @@ class PortalViewModel(application: Application) : AndroidViewModel(application) 
     private val portalsRef = Firebase.database.getPortals()
     var portals by mutableStateOf<List<Portal>>(emptyList())
     var capturedImageUri by mutableStateOf<Uri?>(null)
+    private val addedPortals = mutableSetOf<String>()
+
 
     init {
         fetchPortalsFromFirebase()
@@ -60,16 +67,31 @@ class PortalViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun addMarker(view: MapView?, coordinates: Coordinates) {
-        val annotationApi = view?.annotations
-        val circleAnnotationManager = annotationApi?.createCircleAnnotationManager()
-        val circleAnnotationOptions: CircleAnnotationOptions = CircleAnnotationOptions()
-            .withPoint(Point.fromLngLat(coordinates.longitude, coordinates.latitude))
+    fun addPortalMarker(view: MapView?, portal: Portal) {
+        if (view == null || addedPortals.contains(portal.id)) return
+
+        // portal marker
+        val annotationApi = view.annotations
+        val circleAnnotationManager = annotationApi.createCircleAnnotationManager()
+        val circleAnnotationOptions = CircleAnnotationOptions()
+            .withPoint(Point.fromLngLat(portal.longitude, portal.latitude))
             .withCircleRadius(8.0)
-            .withCircleColor("#ee4e8b")
+            .withCircleColor(BloodRed.toArgb())
             .withCircleStrokeWidth(2.0)
             .withCircleStrokeColor("#ffffff")
-        circleAnnotationManager?.create(circleAnnotationOptions)
+        circleAnnotationManager.create(circleAnnotationOptions)
+
+        // radius circle
+        val polygonAnnotationManager = annotationApi.createPolygonAnnotationManager()
+        val circlePoints = createCirclePoints(portal.coordinates, MAX_DISTANCE_FROM_PORTAL * 1000.0)
+
+        val polygonAnnotationOptions = PolygonAnnotationOptions()
+            .withPoints(listOf(circlePoints))
+            .withFillColor(BloodRed.copy(alpha=0.2f).toArgb())
+            .withFillOpacity(0.4)
+        polygonAnnotationManager.create(polygonAnnotationOptions)
+
+        addedPortals.add(portal.id) // prevent multiple rendering
     }
 
     fun createImageUri(context: Context) {
