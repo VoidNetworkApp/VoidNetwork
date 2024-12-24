@@ -1,6 +1,7 @@
 package fcul.cmov.voidnetwork.ui.screens.messages
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -41,40 +42,42 @@ fun MessagesScreen(
     viewModel: MessageReceiverViewModel
 ) {
     val currentUserId = getCurrentUser()?.uid
-    LazyColumn(
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Column(
         verticalArrangement = Arrangement.Top,
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(50.dp),
-    ) {
-        item {
-            Text(
-                text = stringResource(R.string.recent_messages),
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
-            Spacer(Modifier.height(50.dp))
-        }
-        if (viewModel.messages.isEmpty()) {
-            item {
-                Text(
-                    text = stringResource(R.string.no_messages),
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
-            }
-        } else {
-            items(viewModel.messages.reversed()) { message ->
-                MessageItem(
-                    message = message,
-                    sent = message.sender == currentUserId,
-                    onReplayMessage = { viewModel.replayMessage(message) }
-                )
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize()
+    ){
+        Text(
+            text = stringResource(R.string.recent_messages),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(30.dp),
+            textAlign = TextAlign.Center
+        )
+        LazyColumn(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            if (viewModel.messages.isEmpty()) {
+                item {
+                    Text(
+                        text = stringResource(R.string.no_messages),
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                items(viewModel.messages.reversed()) { message ->
+                    MessageItem(
+                        message = message,
+                        sent = message.sender == currentUserId,
+                        onReplayMessage = { viewModel.replayMessage(message) }
+                    )
+                }
             }
         }
     }
+
 }
 
 @Composable
