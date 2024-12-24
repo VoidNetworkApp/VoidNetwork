@@ -98,54 +98,60 @@ fun PortalsScreenContent(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top,
+        modifier = modifier.fillMaxSize()
     ) {
-        MapboxScreen(onUpdateMapView = onUpdateMapView)
-        Text(
-            text = stringResource(R.string.upside_down_portals),
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(10.dp)
-        )
-        LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
-            items(portals) { portal ->
-                var distance by remember { mutableStateOf<Float?>(null) }
-                LaunchedEffect(currentPosition, portal.coordinates) {
-                    distance = if (currentPosition != null ) {
-                        calculateDistance(currentPosition, portal.coordinates)
-                    } else {
-                        null
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth().weight(0.4f).padding(20.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.upside_down_portals),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(10.dp)
+            )
+            LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
+                items(portals) { portal ->
+                    var distance by remember { mutableStateOf<Float?>(null) }
+                    LaunchedEffect(currentPosition, portal.coordinates) {
+                        distance = if (currentPosition != null) {
+                            calculateDistance(currentPosition, portal.coordinates)
+                        } else {
+                            null
+                        }
                     }
-                }
-                onAddMarker(portal.coordinates)
-                Button(onClick = { onNavigateToPortal(portal.id) }) {
-                    Text(
-                        buildString {
-                            append(portal.street)
-                            distance?.let {
-                                append(" - ${"%.1f".format(distance)} km")
-                                if (it > MAX_DISTANCE_FROM_PORTAL) {
-                                    append(" (${stringResource(R.string.out_of_range)})")
+                    onAddMarker(portal.coordinates)
+                    Button(onClick = { onNavigateToPortal(portal.id) }) {
+                        Text(
+                            buildString {
+                                append(portal.street)
+                                distance?.let {
+                                    append(" - ${"%.1f".format(distance)} km")
+                                    if (it > MAX_DISTANCE_FROM_PORTAL) {
+                                        append(" (${stringResource(R.string.out_of_range)})")
+                                    }
                                 }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
+        MapboxScreen(
+            onUpdateMapView = onUpdateMapView,
+            modifier = Modifier.fillMaxWidth().weight(0.6f)
+        )
     }
 }
 
 @Composable
 fun MapboxScreen(
     onUpdateMapView: (MapView) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val mapViewportState = rememberMapViewportState()
     MapboxMap(
-        Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(0.6f),
+        modifier = modifier,
         mapViewportState = mapViewportState,
     ) {
         MapEffect(Unit) { mapView ->
