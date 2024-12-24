@@ -12,4 +12,4 @@ const val SHORT_DURATION = 400L // ms
 const val LONG_DURATION = 1000L // ms
 const val INTERVAL_DURATION = 400L // ms
 const val MAX_RECENT_MESSAGES = 10
-const val MAX_DISTANCE_FROM_PORTAL = 5 // km
+const val MAX_DISTANCE_FROM_PORTAL = 1 // km

@@ -73,4 +73,5 @@
     <string name="photo_captured">Photo Captured</string>
     <string name="hide_portals">Hide Portals</string>
     <string name="show_portals">Show Portals</string>
+    <string name="navigate_to_portal">Navigate to Portal</string>
 </resources>
