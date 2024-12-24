@@ -5,12 +5,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
@@ -26,7 +30,7 @@ import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 fun RegisterPortalScreen(
     nav: NavController,
     viewModel: PortalViewModel,
-    coordinates: Coordinates?
+    currentLocation: Coordinates?
 ) {
     val context = LocalContext.current
     LaunchedEffect(Unit) {
@@ -42,7 +46,11 @@ fun RegisterPortalScreen(
             nav = nav,
             modifier = Modifier.padding(paddingValues),
             capturedImageUri = viewModel.capturedImageUri,
-            onPhotoCaptured = { viewModel.capturedImageUri = it }
+            onPhotoCaptured = { viewModel.capturedImageUri = it },
+            onRegisterPortal = {
+                currentLocation?.let { viewModel.registerPortal(it) }
+                nav.navigateUp()
+            },
         )
     }
 }
@@ -52,6 +60,7 @@ fun RegisterPortalScreenContent(
     nav: NavController,
     capturedImageUri: Uri?,
     onPhotoCaptured: (Uri) -> Unit,
+    onRegisterPortal: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -62,11 +71,8 @@ fun RegisterPortalScreenContent(
 
         CameraPhoto(capturedImageUri)
         Button(
-            enabled = false, // TODO: only when photo is verified to be a portal
-            onClick = {
-                // TODO: complete this
-                nav.navigate(Screens.Main.route)
-            }
+            enabled = true, // TODO: only when photo is verified to be a portal
+            onClick = onRegisterPortal,
         ) {
             Text(stringResource(R.string.register_portal))
         }

@@ -6,9 +6,10 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.WifiTethering
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
+import fcul.cmov.voidnetwork.domain.Coordinates
 import fcul.cmov.voidnetwork.ui.screens.communication.CommunicationScreen
 import fcul.cmov.voidnetwork.ui.screens.messages.MessagesScreen
-import fcul.cmov.voidnetwork.ui.screens.portal.PortalScreen
+import fcul.cmov.voidnetwork.ui.screens.portal.PortalsScreen
 import fcul.cmov.voidnetwork.ui.utils.composables.HorizontalPager
 import fcul.cmov.voidnetwork.ui.viewmodels.MessageSenderViewModel
 import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel
@@ -21,7 +22,8 @@ fun MainScreen(
     messageSenderViewModel: MessageSenderViewModel,
     languageViewModel: LanguageViewModel,
     portalViewModel: PortalViewModel,
-    messageReceiverViewModel: MessageReceiverViewModel
+    messageReceiverViewModel: MessageReceiverViewModel,
+    currentLocation: Coordinates?
 ) {
     HorizontalPager(
         initialPage = 1,
@@ -36,7 +38,8 @@ fun MainScreen(
                 CommunicationScreen(
                     nav = nav,
                     viewModel = messageSenderViewModel,
-                    portalSelected = portalViewModel.portalSelected,
+                    currentPosition = currentLocation,
+                    portals = portalViewModel.portals,
                     languageSelected = languageViewModel.languageSelected,
                     onTranslate = { languageViewModel.translate(it) },
                     onUpdateDictionary = { signal, message ->
@@ -51,11 +54,11 @@ fun MainScreen(
                     navigateToPage = navigateToPage
                 )
             },
-            Icons.Filled.LocationOn to { navigateToPage ->
-                PortalScreen(
+            Icons.Filled.LocationOn to {
+                PortalsScreen(
                     nav = nav,
                     viewModel = portalViewModel,
-                    navigateToPage = navigateToPage
+                    currentLocation = currentLocation
                 )
             }
         )

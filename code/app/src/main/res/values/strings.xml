@@ -13,7 +13,7 @@
     <string name="automatic_message">Automatic Message</string>
     <string name="touch_message">Touch Message</string>
     <string name="light_message">Light Message</string>
-    <string name="no_portal_selected">No Portal Selected</string>
+    <string name="no_portals_nearby">No Portals Nearby</string>
     <string name="portal_selected">Portal Selected</string>
     <string name="add_portal">Add Portal</string>
     <string name="register_portal">Register Portal</string>
@@ -63,4 +63,12 @@
     <string name="receiving_messages">Receiving Messages</string>
     <string name="new_signal_received">New Signal Received</string>
     <string name="message_sender_icon">Message Sender Icon</string>
+    <string name="current_position">Current Position</string>
+    <string name="sensors_info">Sensors Info</string>
+    <string name="gps">GPS</string>
+    <string name="x_km_away">{distance} km away</string>
+    <string name="portal_info">Portal Info</string>
+    <string name="in_range">In Range</string>
+    <string name="no_photo_captured">No photo captured</string>
+    <string name="photo_captured">Photo Captured</string>
 </resources>

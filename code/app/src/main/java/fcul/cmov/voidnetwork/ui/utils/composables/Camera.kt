@@ -12,10 +12,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import fcul.cmov.voidnetwork.R
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -32,11 +34,11 @@ fun CameraPhoto(
                 .data(uri)
                 .crossfade(true)
                 .build(),
-            contentDescription = "Captured photo",
+            contentDescription = stringResource(id = R.string.photo_captured),
             modifier = modifier.size(200.dp),
         )
     } else {
-        Text(text = "No image captured")
+        Text(text = stringResource(id = R.string.no_photo_captured))
     }
 }
 

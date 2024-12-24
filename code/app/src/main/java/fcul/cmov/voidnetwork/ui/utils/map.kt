@@ -3,6 +3,9 @@ package fcul.cmov.voidnetwork.ui.utils
 import android.location.Location
 import fcul.cmov.voidnetwork.domain.Coordinates
 
+/**
+ * Calculates the distance between two coordinates in kilometers
+ */
 fun calculateDistance(
     fromCoordinates: Coordinates,
     toCoordinates: Coordinates
@@ -15,5 +18,5 @@ fun calculateDistance(
         latitude = toCoordinates.latitude
         longitude = toCoordinates.longitude
     }
-    return startLocation.distanceTo(endLocation) / 1000f // distance in meters
+    return startLocation.distanceTo(endLocation) / 1000f
 }
