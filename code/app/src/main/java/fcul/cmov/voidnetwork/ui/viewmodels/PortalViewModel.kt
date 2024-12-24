@@ -36,26 +36,22 @@ import org.json.JSONObject
 class PortalViewModel(application: Application) : AndroidViewModel(application) {
 
     private val portalsRef = Firebase.database.getPortals()
-
     var portals by mutableStateOf<List<Portal>>(emptyList())
-    var portalSelected by mutableStateOf<Portal?>(null)
     var capturedImageUri by mutableStateOf<Uri?>(null)
-    var currentPosition by mutableStateOf(Coordinates(0.0, 0.0))
-    private val settings by lazy { AppSettings(application) }
 
     init {
         fetchPortalsFromFirebase()
         listenToChangesFromFirebase()
     }
 
-    fun selectPortal(id: String) {
-        portalSelected = portals.firstOrNull { it.id == id }
-        settings.portalSelected = id
+    fun getPortalOrNull(id: String): Portal? {
+        return portals.find { it.id == id }
     }
 
-    fun registerPortal(view: MapView?) {
-        if (view == null) return
-        getStreetName(view, currentPosition) { street ->
+    fun registerPortal(currentPosition: Coordinates) {
+        val context = getApplication<Application>().applicationContext
+        val mapView = MapView(context)
+        getStreetName(mapView, currentPosition) { street ->
             if (street == null) return@getStreetName
             val newRef = portalsRef.push()
             val newId = newRef.key ?: throw IllegalStateException("Failed to generate a new key for the portal")
@@ -131,7 +127,6 @@ class PortalViewModel(application: Application) : AndroidViewModel(application) 
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
                     portals = snapshot.children.mapNotNull { it.getValue(Portal::class.java) }
-                    portalSelected = portals.firstOrNull { it.id == settings.portalSelected }
                 }
             }
             override fun onCancelled(error: DatabaseError) {

@@ -32,7 +32,8 @@ fun ScreenWithTopBar(
                         IconButton(onClick = { it.popBackStack() }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.back)
+                                contentDescription = stringResource(R.string.back),
+                                tint = MaterialTheme.colorScheme.onPrimary
                             )
                         }
                     }

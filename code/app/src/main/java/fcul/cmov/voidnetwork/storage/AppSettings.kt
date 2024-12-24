@@ -9,7 +9,6 @@ class AppSettings(context: Context) {
         private const val PREF_NAME = "AppSettings"
         private const val KEY_ALLOW_RECEIVE_SIGNALS = "allowReceiveSignals"
         private const val KEY_LANGUAGE_SELECTED = "languageSelected"
-        private const val KEY_PORTAL_SELECTED = "portalSelected"
     }
 
     private val sharedPreferences: SharedPreferences =
@@ -23,8 +22,4 @@ class AppSettings(context: Context) {
     var languageSelected: String?
         get() = sharedPreferences.getString(KEY_LANGUAGE_SELECTED, null)
         set(value) { editor.putString(KEY_LANGUAGE_SELECTED, value).apply() }
-
-    var portalSelected: String?
-        get() = sharedPreferences.getString(KEY_PORTAL_SELECTED, null)
-        set(value) { editor.putString(KEY_PORTAL_SELECTED, value).apply() }
 }
