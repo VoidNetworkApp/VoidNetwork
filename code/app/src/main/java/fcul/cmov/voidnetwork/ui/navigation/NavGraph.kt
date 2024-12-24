@@ -8,11 +8,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.google.android.gms.location.FusedLocationProviderClient
 import fcul.cmov.voidnetwork.domain.Coordinates
 import fcul.cmov.voidnetwork.ui.screens.MainScreen
 import fcul.cmov.voidnetwork.ui.screens.communication.LanguageScreen
 import fcul.cmov.voidnetwork.ui.screens.communication.LanguagesScreen
+import fcul.cmov.voidnetwork.ui.screens.portal.PortalScreen
 import fcul.cmov.voidnetwork.ui.screens.portal.RegisterPortalScreen
+import fcul.cmov.voidnetwork.ui.utils.composables.rememberCurrentLocation
 import fcul.cmov.voidnetwork.ui.utils.getArgument
 import fcul.cmov.voidnetwork.ui.viewmodels.MessageSenderViewModel
 import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel
@@ -21,14 +24,17 @@ import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 import fcul.cmov.voidnetwork.ui.viewmodels.factories.SharedViewModelFactory
 
 @Composable
-fun NavGraph(navController: NavHostController) {
+fun NavGraph(
+    navController: NavHostController,
+    fusedLocationClient: FusedLocationProviderClient
+) {
     val application = LocalContext.current.applicationContext as Application
     val factory = remember { SharedViewModelFactory(application) }
     val languageViewModel: LanguageViewModel = viewModel(factory = factory)
     val messageReceiverViewModel: MessageReceiverViewModel = viewModel(factory = factory)
     val messageSenderViewModel: MessageSenderViewModel = viewModel(factory = factory)
     val portalViewModel: PortalViewModel = viewModel()
-
+    val currentLocation = rememberCurrentLocation(fusedLocationClient)
     NavHost(
         navController = navController,
         startDestination = Screens.Main.route
@@ -39,7 +45,8 @@ fun NavGraph(navController: NavHostController) {
                 messageSenderViewModel = messageSenderViewModel,
                 portalViewModel = portalViewModel,
                 messageReceiverViewModel = messageReceiverViewModel,
-                languageViewModel = languageViewModel
+                languageViewModel = languageViewModel,
+                currentLocation = currentLocation
             )
         }
         composable(route = Screens.Languages.route) {
@@ -56,13 +63,20 @@ fun NavGraph(navController: NavHostController) {
                 id = id
             )
         }
-        composable(route = Screens.RegisterPortal.route) { backStackEntry ->
-            val coordinatesStr = backStackEntry.arguments?.getString("coordinates")
-            val coordinates = Coordinates.fromString(coordinatesStr)
+        composable(route = Screens.RegisterPortal.route) {
             RegisterPortalScreen(
                 nav = navController,
                 viewModel = portalViewModel,
-                coordinates = coordinates
+                currentLocation = currentLocation
+            )
+        }
+        composable(route = Screens.Portal.route) { navBackStack ->
+            val id = navBackStack.getArgument(Arguments.id)
+            PortalScreen(
+                nav = navController,
+                viewModel = portalViewModel,
+                id = id,
+                currentLocation = currentLocation
             )
         }
     }

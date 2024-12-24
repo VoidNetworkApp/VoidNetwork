@@ -16,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.SensorsOff
 import androidx.compose.material3.Button
@@ -41,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.CommunicationMode
+import fcul.cmov.voidnetwork.domain.Coordinates
 import fcul.cmov.voidnetwork.domain.Language
 import fcul.cmov.voidnetwork.domain.Message
 import fcul.cmov.voidnetwork.domain.Portal
@@ -50,6 +52,8 @@ import fcul.cmov.voidnetwork.ui.navigation.Screens
 import fcul.cmov.voidnetwork.ui.utils.composables.LightSignalMessage
 import fcul.cmov.voidnetwork.ui.utils.composables.Popup
 import fcul.cmov.voidnetwork.ui.utils.composables.TouchSignalMessage
+import fcul.cmov.voidnetwork.ui.utils.composables.rememberClosestPortal
+import fcul.cmov.voidnetwork.ui.utils.composables.rememberSensorsPopupState
 import fcul.cmov.voidnetwork.ui.utils.composables.rememberUpdateDictionaryWithConfirmation
 import fcul.cmov.voidnetwork.ui.utils.composables.rememberUpsideDownState
 import fcul.cmov.voidnetwork.ui.viewmodels.MessageSenderViewModel
@@ -58,22 +62,32 @@ import fcul.cmov.voidnetwork.ui.viewmodels.MessageSenderViewModel
 fun CommunicationScreen(
     nav: NavController,
     viewModel: MessageSenderViewModel,
-    portalSelected: Portal?,
+    currentPosition: Coordinates?,
+    portals: List<Portal>,
     languageSelected: Language?,
     onTranslate: (String) -> String?,
     onUpdateDictionary: (String, String) -> Unit,
     navigateToPage: (Int) -> Unit = {},
 ) {
+    val closestPortal = rememberClosestPortal(currentPosition, portals)
     val inUpsideDown = rememberUpsideDownState()
     val (replaceSignalPopup, onUpdateDictionaryWithConfirmation) =
         rememberUpdateDictionaryWithConfirmation(languageSelected, onUpdateDictionary)
-
+    val (showSensorsPopup, sensorsPopup) = rememberSensorsPopupState(currentPosition)
     Box(modifier = Modifier.fillMaxSize()) {
         AllowReceiveSignalsButton(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(20.dp)
+            modifier = Modifier.align(Alignment.TopEnd).padding(20.dp)
         )
+        IconButton(onClick = showSensorsPopup,
+            modifier = Modifier.align(Alignment.TopStart).padding(20.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.BugReport,
+                contentDescription = stringResource(R.string.sensors_info),
+                modifier = Modifier.size(30.dp)
+            )
+        }
+        sensorsPopup()
         replaceSignalPopup()
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -106,8 +120,8 @@ fun CommunicationScreen(
                         onLanguageSelection = { nav.navigate(Screens.Languages.route) },
                     )
                     Spacer(Modifier.size(5.dp))
-                    PortalSelectionView(
-                        portalSelected = portalSelected,
+                    PortalSelectedView(
+                        portal = closestPortal,
                         onPortalsClick = { navigateToPage(2) }
                     )
                     Spacer(Modifier.size(5.dp))
@@ -121,50 +135,6 @@ fun CommunicationScreen(
                 Spacer(Modifier.size(5.dp))
             }
         }
-    }
-}
-
-@Composable
-fun ReplaceSignalPopup(
-    existingMessage: Message,
-    onConfirm: () -> Unit,
-    onClose: () -> Unit
-) {
-    Popup(
-        title = stringResource(R.string.signal_already_in_dictionary),
-        onClose = onClose,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = stringResource(R.string.replace_signal_question)
-                    .replace("{signal}", existingMessage.signal)
-                    .replace("{message}", existingMessage.translation!!),
-                color = MaterialTheme.colorScheme.onSecondary
-            )
-            Spacer(Modifier.size(10.dp))
-            Text(
-                text = stringResource(R.string.do_you_want_to_replace_it),
-                color = MaterialTheme.colorScheme.onSecondary
-            )
-            Spacer(Modifier.size(10.dp))
-            Row {
-                Button(onClick = {
-                    onConfirm()
-                    onClose()
-                }) {
-                    Text(stringResource(R.string.replace))
-                }
-                Spacer(Modifier.size(10.dp))
-                Button(onClick = onClose) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
-        }
-
     }
 }
 
@@ -209,8 +179,8 @@ fun LanguageView(
 }
 
 @Composable
-fun PortalSelectionView(
-    portalSelected: Portal?,
+fun PortalSelectedView(
+    portal: Portal?,
     onPortalsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -219,7 +189,7 @@ fun PortalSelectionView(
         horizontalArrangement = Arrangement.Center
     ) {
         Button(onClick = onPortalsClick) {
-            Text(portalSelected?.street ?: stringResource(R.string.no_portal_selected))
+            Text(portal?.street ?: stringResource(R.string.no_portals_nearby))
         }
     }
 }
@@ -350,7 +320,8 @@ fun CommunicationScreenPreview() {
         nav = NavController(LocalContext.current),
         viewModel = MessageSenderViewModel(LocalContext.current as Application),
         languageSelected = null,
-        portalSelected = null,
+        portals = emptyList(),
+        currentPosition = Coordinates(0.0, 0.0),
         onTranslate = { null },
         onUpdateDictionary = { _, _ -> }
     )

@@ -1,173 +1,111 @@
 package fcul.cmov.voidnetwork.ui.screens.portal
 
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.mapbox.maps.MapView
-import com.mapbox.maps.extension.compose.MapEffect
-import com.mapbox.maps.extension.compose.MapboxMap
-import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
-import com.mapbox.maps.plugin.PuckBearing
-import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
-import com.mapbox.maps.plugin.locationcomponent.location
+import coil.compose.AsyncImage
 import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.Coordinates
 import fcul.cmov.voidnetwork.domain.Portal
-import fcul.cmov.voidnetwork.ui.navigation.Screens
-import fcul.cmov.voidnetwork.ui.utils.args
+import fcul.cmov.voidnetwork.ui.utils.MAX_DISTANCE_FROM_PORTAL
 import fcul.cmov.voidnetwork.ui.utils.calculateDistance
+import fcul.cmov.voidnetwork.ui.utils.composables.ScreenWithTopBar
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
-import kotlinx.coroutines.delay
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PortalScreen(
     nav: NavController,
     viewModel: PortalViewModel,
-    navigateToPage: (Int) -> Unit = {},
+    id: String,
+    currentLocation: Coordinates?,
 ) {
-    var mapView by remember { mutableStateOf<MapView?>(null) }
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    nav.navigate(
-                        Screens.RegisterPortal.route.args("coordinates" to viewModel.currentPosition)
-                    )
-                },
-                containerColor = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 60.dp),
-                shape = CircleShape
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = stringResource(R.string.add_portal),
-                    tint = Color.White
-                )
-            }
-        },
-        floatingActionButtonPosition = FabPosition.End, // bottom-right
-        content = { paddingValues ->
-            PortalScreenContent(
-                onUpdateMapView = { mapView = it },
-                currentPosition = viewModel.currentPosition,
-                portals = viewModel.portals,
-                onSelectPortal = { viewModel.selectPortal(it); navigateToPage(1) },
-                onPositionChanged = { viewModel.currentPosition = it },
-                onAddMarker = { viewModel.addMarker(mapView, it) },
-                onRegisterPortal = { viewModel.registerPortal(mapView) },
-                modifier = Modifier.padding(paddingValues),
-            )
+    val portal = viewModel.getPortalOrNull(id)
+    if (portal == null) {
+        // navigate back if the portal is deleted or not found
+        LaunchedEffect(Unit) {
+            nav.popBackStack()
         }
-    )
+        return
+    }
+    ScreenWithTopBar(
+        title = stringResource(R.string.portal_info),
+        nav = nav
+    ) { paddingValues ->
+        PortalScreenContent(
+            modifier = Modifier.padding(paddingValues),
+            portal = portal,
+            currentLocation = currentLocation,
+        )
+    }
 }
 
 @Composable
 fun PortalScreenContent(
-    onUpdateMapView: (MapView) -> Unit,
-    currentPosition: Coordinates,
-    portals: List<Portal>,
-    onSelectPortal: (String) -> Unit,
-    onPositionChanged: (Coordinates) -> Unit,
-    onAddMarker: (Coordinates) -> Unit,
-    onRegisterPortal: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    portal: Portal,
+    currentLocation: Coordinates?,
 ) {
+    var distance by remember { mutableStateOf<Float?>(null) }
+
+    LaunchedEffect(currentLocation) {
+        if (currentLocation != null) {
+            distance = calculateDistance(currentLocation, portal.coordinates)
+        }
+    }
+
     Column(
         modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
     ) {
-        Text(stringResource(R.string.upside_down_portals))
-        Box(Modifier.size(350.dp)) {
-            MapboxScreen(
-                onUpdateMapView = onUpdateMapView,
-                onPositionChanged = onPositionChanged
+        Text(
+            text = portal.street,
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(10.dp)
+        )
+
+        // TODO: Replace with captured image from camera (stored in firebase)
+        AsyncImage(
+            model = "https://i.ibb.co/vzVc0v1/treeportal.png",
+            placeholder = painterResource(R.drawable.ic_launcher_foreground),
+            error = painterResource(R.drawable.ic_launcher_foreground),
+            contentDescription = stringResource(R.string.portal_captured_with_camera),
+            modifier = Modifier
+                .size(300.dp)
+                .background(Color.Black)
+        )
+        Text(
+            text = portal.coordinates.toString()
+        )
+        distance?.let {
+            Text(text = stringResource(R.string.x_km_away).replace("{distance}", it.toString()))
+            Text(
+                text = if (it > MAX_DISTANCE_FROM_PORTAL) {
+                    " (${stringResource(R.string.out_of_range)})"
+                } else {
+                    " (${stringResource(R.string.in_range)})"
+                }
             )
-            Button(onClick = onRegisterPortal) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = stringResource(R.string.add_portal),
-                    tint = Color.White
-                )
-            }
-        }
-
-        LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
-            items(portals) { portal ->
-                var distance by remember { mutableStateOf(0f) }
-                LaunchedEffect(currentPosition, portal.coordinates) {
-                    distance = calculateDistance(currentPosition, portal.coordinates)
-                }
-                onAddMarker(portal.coordinates)
-                Button(onClick = { onSelectPortal(portal.id) }) {
-                    Text(
-                        buildString {
-                            append("${portal.street} - ${"%.1f".format(distance)} km")
-                            if (distance > 5) {
-                                append(" (${stringResource(R.string.out_of_range)})")
-                            }
-                        }
-                    )
-                }
-            }
         }
     }
 }
 
-@Composable
-fun MapboxScreen(
-    onUpdateMapView: (MapView) -> Unit,
-    onPositionChanged: (Coordinates) -> Unit,
-) {
-    val mapViewportState = rememberMapViewportState()
-    MapboxMap(
-        Modifier.fillMaxSize(),
-        mapViewportState = mapViewportState,
-    ) {
-        MapEffect(Unit) { mapView ->
-            onUpdateMapView(mapView)
-            mapView.location.updateSettings {
-                locationPuck = createDefault2DPuck(withBearing = true)
-                enabled = true
-                puckBearing = PuckBearing.COURSE
-                puckBearingEnabled = true
-            }
-            mapViewportState.transitionToFollowPuckState()
-            mapView.location.addOnIndicatorPositionChangedListener { point ->
-                val coordinates = Coordinates(point.latitude(), point.longitude())
-                onPositionChanged(coordinates)
-            }
-        }
-    }
-}
