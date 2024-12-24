@@ -1,15 +1,19 @@
 package fcul.cmov.voidnetwork.ui.screens.portal
 
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -34,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.mapbox.maps.MapView
 import com.mapbox.maps.extension.compose.MapEffect
@@ -87,7 +92,6 @@ fun PortalsScreen(
         }
     )
 }
-
 @Composable
 fun PortalsScreenContent(
     onUpdateMapView: (MapView) -> Unit,
@@ -97,52 +101,80 @@ fun PortalsScreenContent(
     onNavigateToPortal: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    var isPortalListVisible by remember { mutableStateOf(false) }
+    Box(
         modifier = modifier.fillMaxSize()
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth().weight(0.4f).padding(20.dp),
+        MapboxScreen(
+            onUpdateMapView = onUpdateMapView,
+            modifier = Modifier.fillMaxSize()
+        )
+        AnimatedVisibility(
+            visible = isPortalListVisible,
+            enter = slideInVertically { fullHeight -> -fullHeight } + fadeIn(),
+            exit = slideOutVertically { fullHeight -> -fullHeight } + fadeOut(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.4f)
+                .align(Alignment.TopCenter)
+                .zIndex(1f)
         ) {
-            Text(
-                text = stringResource(R.string.upside_down_portals),
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(10.dp)
-            )
-            LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
-                items(portals) { portal ->
-                    var distance by remember { mutableStateOf<Float?>(null) }
-                    LaunchedEffect(currentPosition, portal.coordinates) {
-                        distance = if (currentPosition != null) {
-                            calculateDistance(currentPosition, portal.coordinates)
-                        } else {
-                            null
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.onPrimary),
+            ) {
+                Text(
+                    text = stringResource(R.string.upside_down_portals),
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(10.dp)
+                )
+                LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
+                    items(portals) { portal ->
+                        var distance by remember { mutableStateOf<Float?>(null) }
+                        LaunchedEffect(currentPosition, portal.coordinates) {
+                            distance = if (currentPosition != null) {
+                                calculateDistance(currentPosition, portal.coordinates)
+                            } else {
+                                null
+                            }
                         }
-                    }
-                    onAddMarker(portal.coordinates)
-                    Button(onClick = { onNavigateToPortal(portal.id) }) {
-                        Text(
-                            buildString {
-                                append(portal.street)
-                                distance?.let {
-                                    append(" - ${"%.1f".format(distance)} km")
-                                    if (it > MAX_DISTANCE_FROM_PORTAL) {
-                                        append(" (${stringResource(R.string.out_of_range)})")
+                        onAddMarker(portal.coordinates)
+                        Button(onClick = { onNavigateToPortal(portal.id) }) {
+                            Text(
+                                buildString {
+                                    append(portal.street)
+                                    distance?.let {
+                                        append(" - ${"%.1f".format(distance)} km")
+                                        if (it > MAX_DISTANCE_FROM_PORTAL) {
+                                            append(" (${stringResource(R.string.out_of_range)})")
+                                        }
                                     }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }
         }
-        MapboxScreen(
-            onUpdateMapView = onUpdateMapView,
-            modifier = Modifier.fillMaxWidth().weight(0.6f)
-        )
+        Button(
+            onClick = { isPortalListVisible = !isPortalListVisible },
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(16.dp)
+                .zIndex(2f)
+        ) {
+            Text(
+                if (isPortalListVisible) stringResource(id = R.string.hide_portals)
+                else stringResource(id = R.string.show_portals)
+            )
+        }
     }
 }
+
+
 
 @Composable
 fun MapboxScreen(

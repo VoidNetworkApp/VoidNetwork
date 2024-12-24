@@ -71,4 +71,6 @@
     <string name="in_range">In Range</string>
     <string name="no_photo_captured">No photo captured</string>
     <string name="photo_captured">Photo Captured</string>
+    <string name="hide_portals">Hide Portals</string>
+    <string name="show_portals">Show Portals</string>
 </resources>
