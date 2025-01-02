@@ -43,8 +43,6 @@ class PortalViewModel(application: Application) : AndroidViewModel(application) 
     private val portalsRef = Firebase.database.getPortals()
     var portals by mutableStateOf<List<Portal>>(emptyList())
     var capturedImageUri by mutableStateOf<Uri?>(null)
-    private val addedPortals = mutableSetOf<String>()
-
 
     init {
         fetchPortalsFromFirebase()
@@ -67,9 +65,7 @@ class PortalViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun addPortalMarker(view: MapView?, portal: Portal) {
-        if (view == null || addedPortals.contains(portal.id)) return
-
+    fun addPortalMarker(view: MapView, portal: Portal) {
         // portal marker
         val annotationApi = view.annotations
         val circleAnnotationManager = annotationApi.createCircleAnnotationManager()
@@ -90,8 +86,6 @@ class PortalViewModel(application: Application) : AndroidViewModel(application) 
             .withFillColor(BloodRed.copy(alpha=0.2f).toArgb())
             .withFillOpacity(0.4)
         polygonAnnotationManager.create(polygonAnnotationOptions)
-
-        addedPortals.add(portal.id) // prevent multiple rendering
     }
 
     fun createImageUri(context: Context) {
@@ -142,7 +136,6 @@ class PortalViewModel(application: Application) : AndroidViewModel(application) 
             }
         }
     }
-
 
     private fun fetchPortalsFromFirebase() {
         portalsRef.addValueEventListener(object : ValueEventListener {
