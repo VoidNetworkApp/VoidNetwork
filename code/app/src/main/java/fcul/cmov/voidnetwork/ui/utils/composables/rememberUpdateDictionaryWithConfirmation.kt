@@ -26,6 +26,7 @@ import fcul.cmov.voidnetwork.domain.Message
 fun rememberUpdateDictionaryWithConfirmation(
     languageSelected: Language?,
     onUpdateDictionary: (String, String) -> Unit,
+    enabled: Boolean = true
 ): Pair<@Composable () -> Unit, (String, String) -> Unit> {
     val popupState = rememberSaveablePopupState()
     var confirmAction by remember { mutableStateOf({}) }

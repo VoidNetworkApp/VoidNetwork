@@ -63,6 +63,7 @@ import fcul.cmov.voidnetwork.ui.utils.args
 import fcul.cmov.voidnetwork.ui.utils.calculateDistance
 import fcul.cmov.voidnetwork.ui.utils.composables.rememberUpsideDownState
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PortalsScreen(
@@ -109,20 +110,20 @@ fun PortalsScreenContent(
     viewModel: PortalViewModel
 ) {
     var isPortalListVisible by remember { mutableStateOf(false) }
-    val localMapViewState = remember { mutableStateOf<MapView?>(null) }
+    var localMapViewState by remember { mutableStateOf<MapView?>(null) }
 
     Box(
         modifier = modifier.fillMaxSize()
     ) {
         MapboxScreen(
             onUpdateMapView = { mapView ->
-                localMapViewState.value = mapView
+                localMapViewState = mapView
                 onUpdateMapView(mapView)
             },
             modifier = Modifier.fillMaxSize()
         )
-        LaunchedEffect(portals, localMapViewState.value) {
-            localMapViewState.value?.let { mapView ->
+        LaunchedEffect(portals, localMapViewState) {
+            localMapViewState?.let { mapView ->
                 portals.forEach { portal ->
                     viewModel.addPortalMarker(mapView, portal)
                 }
@@ -163,12 +164,14 @@ fun PortalsScreenContent(
                         Row(
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp)
                         ) {
                             Button(
                                 modifier = Modifier.weight(1f),
-                                onClick = {
-                                    localMapViewState.value?.mapboxMap?.setCamera(
+                                onClick = { // navigate to portal location in map
+                                    localMapViewState?.mapboxMap?.setCamera(
                                         CameraOptions.Builder()
                                             .center(Point.fromLngLat(portal.longitude, portal.latitude))
                                             .zoom(16.0)
