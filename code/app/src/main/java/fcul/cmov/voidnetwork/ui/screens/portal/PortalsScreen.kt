@@ -153,7 +153,10 @@ fun PortalsScreenContent(
                     color = MaterialTheme.colorScheme.onSecondary
                 )
                 LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
-                    items(portals) { portal ->
+
+                    val portalsSorted = arrangePortals(portals, currentPosition)
+
+                    items(portalsSorted) { portal ->
                         var distance by remember { mutableStateOf<Float?>(null) }
 
                         LaunchedEffect(currentPosition, portal.coordinates) {
@@ -221,6 +224,18 @@ fun PortalsScreenContent(
             )
         }
     }
+}
+
+fun arrangePortals(portals: List<Portal>, currentPosition: Coordinates?): List<Portal> {
+    var map: MutableMap<Portal, Float> = mutableMapOf()
+    for(portal in portals) {
+        if(currentPosition != null) {
+            map[portal] = calculateDistance(currentPosition, portal.coordinates)
+        }
+    }
+    map = map.toList().sortedBy { (_, value) -> value }.toMap().toMutableMap()
+
+    return map.keys.toList()
 }
 
 @Composable
