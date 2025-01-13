@@ -8,27 +8,33 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.google.android.gms.location.FusedLocationProviderClient
+import fcul.cmov.voidnetwork.domain.Coordinates
 import fcul.cmov.voidnetwork.ui.screens.MainScreen
 import fcul.cmov.voidnetwork.ui.screens.communication.LanguageScreen
 import fcul.cmov.voidnetwork.ui.screens.communication.LanguagesScreen
+import fcul.cmov.voidnetwork.ui.screens.portal.PortalScreen
 import fcul.cmov.voidnetwork.ui.screens.portal.RegisterPortalScreen
+import fcul.cmov.voidnetwork.ui.utils.composables.rememberCurrentLocation
 import fcul.cmov.voidnetwork.ui.utils.getArgument
-import fcul.cmov.voidnetwork.ui.viewmodels.CommunicationViewModel
+import fcul.cmov.voidnetwork.ui.viewmodels.MessageSenderViewModel
 import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel
-import fcul.cmov.voidnetwork.ui.viewmodels.MusicPlayerViewModel
+import fcul.cmov.voidnetwork.ui.viewmodels.MessageReceiverViewModel
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 import fcul.cmov.voidnetwork.ui.viewmodels.factories.SharedViewModelFactory
-import fcul.cmov.voidnetwork.ui.viewmodels.repository.RepositoryViewModel
 
 @Composable
-fun NavGraph(navController: NavHostController) {
+fun NavGraph(
+    navController: NavHostController,
+    fusedLocationClient: FusedLocationProviderClient
+) {
     val application = LocalContext.current.applicationContext as Application
-    val languagesRepository: RepositoryViewModel = viewModel()
-    val factory = remember { SharedViewModelFactory(application, languagesRepository) }
+    val factory = remember { SharedViewModelFactory(application) }
     val languageViewModel: LanguageViewModel = viewModel(factory = factory)
-    val communicationViewModel: CommunicationViewModel = viewModel(factory = factory)
+    val messageReceiverViewModel: MessageReceiverViewModel = viewModel(factory = factory)
+    val messageSenderViewModel: MessageSenderViewModel = viewModel(factory = factory)
     val portalViewModel: PortalViewModel = viewModel()
-    val musicPlayerViewModel: MusicPlayerViewModel = viewModel()
+    val currentLocation = rememberCurrentLocation(fusedLocationClient)
     NavHost(
         navController = navController,
         startDestination = Screens.Main.route
@@ -36,10 +42,11 @@ fun NavGraph(navController: NavHostController) {
         composable(route = Screens.Main.route) {
             MainScreen(
                 nav = navController,
-                communicationViewModel = communicationViewModel,
+                messageSenderViewModel = messageSenderViewModel,
                 portalViewModel = portalViewModel,
-                musicPlayerViewModel = musicPlayerViewModel,
-                languageViewModel = languageViewModel
+                messageReceiverViewModel = messageReceiverViewModel,
+                languageViewModel = languageViewModel,
+                currentLocation = currentLocation
             )
         }
         composable(route = Screens.Languages.route) {
@@ -56,16 +63,20 @@ fun NavGraph(navController: NavHostController) {
                 id = id
             )
         }
-        composable(route = Screens.RegisterPortal.route) { backStackEntry ->
-            // Extract arguments from the back stack entry
-            val latitude = backStackEntry.arguments?.getString("latitude")?.toDoubleOrNull()
-            val longitude = backStackEntry.arguments?.getString("longitude")?.toDoubleOrNull()
-
+        composable(route = Screens.RegisterPortal.route) {
             RegisterPortalScreen(
                 nav = navController,
                 viewModel = portalViewModel,
-                latitude = latitude,
-                longitude = longitude
+                currentLocation = currentLocation
+            )
+        }
+        composable(route = Screens.Portal.route) { navBackStack ->
+            val id = navBackStack.getArgument(Arguments.id)
+            PortalScreen(
+                nav = navController,
+                viewModel = portalViewModel,
+                id = id,
+                currentLocation = currentLocation
             )
         }
     }

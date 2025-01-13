@@ -1,38 +1,31 @@
-package fcul.cmov.voidnetwork.ui.utils
+package fcul.cmov.voidnetwork.ui.utils.composables
 
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import kotlinx.coroutines.delay
+import fcul.cmov.voidnetwork.ui.utils.LONG
+import fcul.cmov.voidnetwork.ui.utils.MAX_SIGNAL_LENGTH
+import fcul.cmov.voidnetwork.ui.utils.MIN_CODE_DURATION_SHORT
+import fcul.cmov.voidnetwork.ui.utils.SHORT
 
 @Composable
-fun rememberPressSequence(): Triple<String, Modifier, () -> Unit> {
+fun rememberTouchSequence(): Triple<String, Modifier, () -> Unit> {
     var sequence by rememberSaveable { mutableStateOf("") }
     var pressStartTime by rememberSaveable { mutableStateOf(0L) }
     var lastUpdateTime by rememberSaveable { mutableStateOf(0L) }
-
-    // reset if inactivity
-    LaunchedEffect(lastUpdateTime) {
-        if (sequence.isNotBlank()) {
-            delay(MAX_INACTIVITY_DURATION)
-            if (System.currentTimeMillis() - lastUpdateTime >= MAX_INACTIVITY_DURATION) {
-                sequence = ""
-            }
-        }
-    }
 
     return Triple(
         sequence,
         Modifier.pointerInput(Unit) {
             detectTapGestures(
                 onPress = {
-                    if (sequence.length >= MAX_CODE_LENGTH) sequence = ""
+                    if (sequence.length >= MAX_SIGNAL_LENGTH) sequence = ""
                     pressStartTime = System.currentTimeMillis()
                     tryAwaitRelease()
                     val pressDuration = System.currentTimeMillis() - pressStartTime
-                    sequence += if (pressDuration < MIN_PRESS_DURATION_SHORT_PRESS) SHORT else LONG
+                    sequence += if (pressDuration < MIN_CODE_DURATION_SHORT) SHORT else LONG
                     lastUpdateTime = System.currentTimeMillis()
                 }
             )

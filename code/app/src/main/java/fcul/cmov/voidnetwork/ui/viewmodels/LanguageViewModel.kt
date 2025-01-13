@@ -1,10 +1,11 @@
 package fcul.cmov.voidnetwork.ui.viewmodels
 
+import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -12,17 +13,19 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import fcul.cmov.voidnetwork.domain.Language
 import fcul.cmov.voidnetwork.repository.LanguagesRepository
-import fcul.cmov.voidnetwork.ui.utils.MAX_CODE_LENGTH
+import fcul.cmov.voidnetwork.storage.AppSettings
+import fcul.cmov.voidnetwork.ui.utils.LONG
+import fcul.cmov.voidnetwork.ui.utils.MAX_SIGNAL_LENGTH
 import fcul.cmov.voidnetwork.ui.utils.MAX_MESSAGE_LENGTH
+import fcul.cmov.voidnetwork.ui.utils.SHORT
+import fcul.cmov.voidnetwork.ui.utils.getLanguages
 
-class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel() {
-    // handles language crud operations and selection
+class LanguageViewModel(
+    application: Application,
+) : AndroidViewModel(application) {
 
-    private val database by lazy { Firebase.database.reference }
-
-    private val languageDatabase
-        get() = database.child("languages")
-
+    private val languagesRef = Firebase.database.getLanguages()
+    private val settings by lazy { AppSettings(application) }
     var languageSelected: Language? by mutableStateOf(null)
 
     init {
@@ -30,8 +33,12 @@ class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel(
         listenToChangesFromFirebase()
     }
 
+    fun translate(signal: String): String? {
+        return languageSelected?.dictionary?.get(signal)
+    }
+
     fun getLanguage(id: String): Language {
-        return languages[id]
+        return LanguagesRepository[id]
     }
 
     fun getLanguageOrNull(id: String): Language? {
@@ -43,7 +50,7 @@ class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel(
     }
 
     fun getLanguages(): List<Language> {
-        return languages.get()
+        return LanguagesRepository.get()
     }
 
     fun addLanguage(onCompleted: (String) -> Unit) {
@@ -52,13 +59,14 @@ class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel(
 
     fun selectLanguage(id: String) {
         languageSelected = getLanguage(id)
+        settings.languageSelected = id
     }
 
     fun deleteLanguage(id: String) {
         deleteLanguageFromFirebase(id)
     }
 
-    fun onEditLanguage(id: String, name: String) {
+    fun editLanguage(id: String, name: String) {
         require(id.isNotBlank()) { "Id must not be blank" }
         require(name.isNotBlank()) { "Name must not be blank" }
         require(name.length <= MAX_MESSAGE_LENGTH) { "Language name length must be less than $MAX_MESSAGE_LENGTH" }
@@ -69,35 +77,37 @@ class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel(
         updateLanguageInFirebase(updatedLanguage)
     }
 
-    fun onUpdateLanguageDictionary(id: String, code: String, msg: String) {7
+    fun updateLanguageDictionary(id: String, signal: String, message: String) {7
         require(id.isNotBlank()) { "Id must not be blank" }
-        require(code.length <= MAX_CODE_LENGTH) { "Code length must be less than $MAX_CODE_LENGTH" }
-        require(msg.length <= MAX_MESSAGE_LENGTH) { "Message length must be less than $MAX_MESSAGE_LENGTH" }
-
+        require(signal.length <= MAX_SIGNAL_LENGTH) { "Signal length must be less than $MAX_SIGNAL_LENGTH" }
+        require(message.length <= MAX_MESSAGE_LENGTH) { "Message length must be less than $MAX_MESSAGE_LENGTH" }
+        require(signal.all { it == SHORT || it == LONG }) { "Signal must be composed of $SHORT and $LONG symbols" }
+        if (message == "Unknown") return
         val language = getLanguage(id)
-        val updatedLanguage = language.copy(dictionary = language.dictionary + (code to msg))
+        val updatedLanguage = language.copy(dictionary = language.dictionary + (signal to message))
         updateLanguageInFirebase(updatedLanguage)
     }
 
-    fun onDeleteMessageFromLanguage(id: String, code: String) {
+    fun deleteMessageFromLanguage(id: String, signal: String) {
         val language = getLanguage(id)
-        val updatedLanguage = language.copy(dictionary = language.dictionary - code)
+        val updatedLanguage = language.copy(dictionary = language.dictionary - signal)
         updateLanguageInFirebase(updatedLanguage)
     }
 
     private fun loadLanguagesFromFirebase() {
-        languageDatabase.get().addOnSuccessListener { dataSnapshot ->
+        languagesRef.get().addOnSuccessListener { dataSnapshot ->
             // get languages from database
             val languages = dataSnapshot.children.mapNotNull { it.getValue(Language::class.java) }
             // update languages in memory
-            this.languages.load(languages)
+            LanguagesRepository.load(languages)
+            languageSelected = languages.firstOrNull { it.id == settings.languageSelected }
         }
     }
 
     private fun addLanguageToFirebase(onCompleted: (String) -> Unit): String {
-        val newRef = languageDatabase.push()
+        val newRef = languagesRef.push()
         val newId = newRef.key ?: throw IllegalStateException("Failed to generate a new key for the language")
-        val newLanguages = languages.get().count { it.name.startsWith("New Language") }
+        val newLanguages = LanguagesRepository.get().count { it.name.startsWith("New Language") }
         val name = "New Language${if (newLanguages > 0) " ($newLanguages)" else ""}"
         val newLanguage = Language(newId, name, emptyMap())
         newRef.setValue(newLanguage)
@@ -108,27 +118,27 @@ class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel(
     }
 
     private fun updateLanguageInFirebase(language: Language) {
-        languageDatabase.child(language.id).setValue(language)
+        languagesRef.child(language.id).setValue(language)
     }
 
     private fun deleteLanguageFromFirebase(id: String) {
-        languageDatabase.child(id).removeValue()
+        languagesRef.child(id).removeValue()
     }
 
     private fun listenToChangesFromFirebase() {
         // updates languages in memory when database changes
-        languageDatabase.addChildEventListener(object : ChildEventListener {
+        languagesRef.addChildEventListener(object : ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 val language = snapshot.getValue(Language::class.java)
                 requireNotNull(language) { "Language is null" }
-                languages += language
+                LanguagesRepository += language
             }
 
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
                 val language = snapshot.getValue(Language::class.java)
                 requireNotNull(language) { "Language is null" }
-                synchronized(languages) {
-                    languages.update(language)
+                synchronized(LanguagesRepository) {
+                    LanguagesRepository.update(language)
                     if (languageSelected?.id == language.id) {
                         languageSelected = language
                     }
@@ -138,8 +148,8 @@ class LanguageViewModel(private val languages: LanguagesRepository) : ViewModel(
             override fun onChildRemoved(snapshot: DataSnapshot) {
                 val language = snapshot.getValue(Language::class.java)
                 requireNotNull(language) { "Language is null" }
-                synchronized(languages) {
-                    languages -= language
+                synchronized(LanguagesRepository) {
+                    LanguagesRepository -= language
                     if (languageSelected?.id == language.id) {
                         languageSelected = null
                     }
