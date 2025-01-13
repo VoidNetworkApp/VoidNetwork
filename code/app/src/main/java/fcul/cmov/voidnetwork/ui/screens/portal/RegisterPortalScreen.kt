@@ -90,23 +90,13 @@ fun RegisterPortalScreenContent(
                 .size(300.dp)
                 .background(Color.Black)
         )
-        // TODO Add coordinates logic
-        // TODO Add Verified portal logic
-        Button(onClick = { Log.d("","") }) {
+        Button(
+            enabled = true, // TODO Add Verified portal logic
+            onClick = onRegisterPortal,
+        ) {
             Text(stringResource(R.string.register_portal))
         }
-//        Button(onClick = { if (latitude != null && longitude != null) { marker(latitude, longitude) }
-//            nav.navigate(Screens.Main.route)
-//                         }, enabled = true) {
-//
-//        /* CameraPhoto(capturedImageUri)
-//        Button(
-//            enabled = true, // TODO: only when photo is verified to be a portal
-//            onClick = onRegisterPortal,
-//        ) {*/
-//            Text(stringResource(R.string.register_portal))
-//        }
-//        Text(stringResource(R.string.waiting_for_photo_verification))
+        Text(stringResource(R.string.waiting_for_photo_verification))
         CameraButton(
             onPhotoCaptured = { onPhotoCaptured(it) },
             text = stringResource(R.string.capture_photo),
