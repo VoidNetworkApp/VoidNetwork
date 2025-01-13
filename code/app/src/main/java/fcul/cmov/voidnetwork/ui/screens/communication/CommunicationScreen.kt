@@ -16,22 +16,23 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.TouchApp
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Sensors
+import androidx.compose.material.icons.filled.SensorsOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -41,64 +42,125 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.CommunicationMode
+import fcul.cmov.voidnetwork.domain.Coordinates
 import fcul.cmov.voidnetwork.domain.Language
+import fcul.cmov.voidnetwork.domain.Message
 import fcul.cmov.voidnetwork.domain.Portal
-import fcul.cmov.voidnetwork.repository.LanguagesRepository
+import fcul.cmov.voidnetwork.services.MessageReceiverForegroundService
+import fcul.cmov.voidnetwork.storage.AppSettings
 import fcul.cmov.voidnetwork.ui.navigation.Screens
-import fcul.cmov.voidnetwork.ui.utils.rememberPressSequence
-import fcul.cmov.voidnetwork.ui.viewmodels.CommunicationViewModel
-import kotlinx.coroutines.delay
-
-typealias SendSignalHandler = (language: String?, signal: String, mode: CommunicationMode) -> Unit
+import fcul.cmov.voidnetwork.ui.utils.composables.LightSignalMessage
+import fcul.cmov.voidnetwork.ui.utils.composables.Popup
+import fcul.cmov.voidnetwork.ui.utils.composables.TouchSignalMessage
+import fcul.cmov.voidnetwork.ui.utils.composables.rememberClosestPortal
+import fcul.cmov.voidnetwork.ui.utils.composables.rememberSensorsPopupState
+import fcul.cmov.voidnetwork.ui.utils.composables.rememberUpdateDictionaryWithConfirmation
+import fcul.cmov.voidnetwork.ui.utils.composables.rememberUpsideDownState
+import fcul.cmov.voidnetwork.ui.viewmodels.MessageSenderViewModel
 
 @Composable
 fun CommunicationScreen(
     nav: NavController,
-    viewModel: CommunicationViewModel,
-    portalSelected: Portal?,
+    viewModel: MessageSenderViewModel,
+    currentPosition: Coordinates?,
+    portals: List<Portal>,
     languageSelected: Language?,
+    onTranslate: (String) -> String?,
+    onUpdateDictionary: (String, String) -> Unit,
     navigateToPage: (Int) -> Unit = {},
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = stringResource(R.string.app_name),
-            fontSize = 40.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(50.dp)
+    val closestPortal = rememberClosestPortal(currentPosition, portals)
+    val inUpsideDown = rememberUpsideDownState()
+    val (replaceSignalPopup, onUpdateDictionaryWithConfirmation) =
+        rememberUpdateDictionaryWithConfirmation(languageSelected, onUpdateDictionary)
+    val (showSensorsPopup, sensorsPopup) = rememberSensorsPopupState(currentPosition)
+    Box(modifier = Modifier.fillMaxSize()) {
+        AllowReceiveSignalsButton(
+            modifier = Modifier.align(Alignment.TopEnd).padding(20.dp)
         )
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceEvenly
+        IconButton(onClick = showSensorsPopup,
+            modifier = Modifier.align(Alignment.TopStart).padding(20.dp)
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                LanguageView(
-                    languageSelected = languageSelected?.name ?: stringResource(R.string.no_language_selected),
-                    onLanguageSelection = { nav.navigate(Screens.Languages.route) },
-                )
-                Spacer(Modifier.size(10.dp))
-                PortalSelectionView(
-                    portalSelected = portalSelected,
-                    onPortalsClick = { navigateToPage(2) }
-                )
-            }
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                viewModel.lastMessage?.let {
-                    Text("${it.signal}: ${it.translation}")
-                }
-                Spacer(Modifier.size(20.dp))
-                MessageView(languageSelected, viewModel::sendSignal)
-            }
-
+            Icon(
+                imageVector = Icons.Filled.BugReport,
+                contentDescription = stringResource(R.string.sensors_info),
+                modifier = Modifier.size(30.dp)
+            )
         }
+        sensorsPopup()
+        replaceSignalPopup()
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text(
+                text = stringResource(R.string.app_name),
+                fontSize = 40.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(20.dp)
+            )
+            Spacer(Modifier.size(20.dp))
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        if (inUpsideDown) stringResource(R.string.in_upside_down)
+                        else stringResource(R.string.in_real_world)
+                    )
+                    Spacer(Modifier.size(20.dp))
+                    LanguageView(
+                        languageSelected = languageSelected?.name ?: stringResource(R.string.no_language_selected),
+                        onLanguageSelection = { nav.navigate(Screens.Languages.route) },
+                    )
+                    Spacer(Modifier.size(5.dp))
+                    PortalSelectedView(
+                        portal = closestPortal,
+                        onPortalsClick = { navigateToPage(2) }
+                    )
+                    Spacer(Modifier.size(5.dp))
+                }
+                MessageView(
+                    languageSelected = languageSelected,
+                    sendSignal = { viewModel.sendSignal(languageSelected?.id, it) },
+                    onTranslate = onTranslate,
+                    onUpdateDictionary = onUpdateDictionaryWithConfirmation,
+                )
+                Spacer(Modifier.size(5.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun AllowReceiveSignalsButton(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val settings by remember { mutableStateOf(AppSettings(context)) }
+    var allowReceiveSignals by rememberSaveable { mutableStateOf(settings.allowReceiveSignals) }
+
+    IconButton(
+        modifier = modifier,
+        onClick = {
+            allowReceiveSignals = !allowReceiveSignals
+            settings.allowReceiveSignals = allowReceiveSignals
+            if (allowReceiveSignals) {
+                MessageReceiverForegroundService.start(context)
+            } else {
+                MessageReceiverForegroundService.stop(context)
+            }
+        },
+    ) {
+        Icon(
+            imageVector = if (allowReceiveSignals) Icons.Default.Sensors else Icons.Default.SensorsOff,
+            contentDescription = stringResource(R.string.allow_receive_signals),
+            modifier = Modifier.size(30.dp)
+        )
     }
 }
 
@@ -117,8 +179,8 @@ fun LanguageView(
 }
 
 @Composable
-fun PortalSelectionView(
-    portalSelected: Portal?,
+fun PortalSelectedView(
+    portal: Portal?,
     onPortalsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -127,13 +189,7 @@ fun PortalSelectionView(
         horizontalArrangement = Arrangement.Center
     ) {
         Button(onClick = onPortalsClick) {
-            Text(
-                if (portalSelected == null) stringResource(R.string.no_portal_selected)
-                else stringResource(R.string.portal_selected)
-            )
-            portalSelected?.let { portal ->
-                Text(text = portal.street)
-            }
+            Text(portal?.street ?: stringResource(R.string.no_portals_nearby))
         }
     }
 }
@@ -141,7 +197,9 @@ fun PortalSelectionView(
 @Composable
 fun MessageView(
     languageSelected: Language?,
-    sendSignal: SendSignalHandler,
+    sendSignal: (String) -> Unit,
+    onTranslate: (String) -> String?,
+    onUpdateDictionary: (String, String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var communicationMode: CommunicationMode by rememberSaveable { mutableStateOf(CommunicationMode.TOUCH)}
@@ -168,16 +226,22 @@ fun MessageView(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier
-                .fillMaxHeight(0.7f)
-                .fillMaxWidth(0.9f)
+                .fillMaxSize(0.9f)
                 .padding(10.dp)
                 .clip(RoundedCornerShape(20.dp))
                 .background(MaterialTheme.colorScheme.surface)
         ) {
+            val onSubmit = { sequence: String, message: String ->
+                onUpdateDictionary(sequence, message)
+                sendSignal(sequence)
+            }
             when (communicationMode) {
-                CommunicationMode.TOUCH -> TouchMessageView(languageSelected, sendSignal)
-                CommunicationMode.LIGHT -> LightMessageView(languageSelected, sendSignal)
-                CommunicationMode.AUTO -> AutomaticMessageView(languageSelected, sendSignal)
+                CommunicationMode.TOUCH ->
+                    TouchMessageView(onTranslate, onSubmit)
+                CommunicationMode.LIGHT ->
+                    LightMessageView(onTranslate, onSubmit)
+                CommunicationMode.AUTO ->
+                    AutomaticMessageView(languageSelected, sendSignal)
             }
         }
     }
@@ -185,82 +249,42 @@ fun MessageView(
 
 @Composable
 fun TouchMessageView(
-    languageSelected: Language?,
-    sendSignal: SendSignalHandler
+    onTranslate: (String) -> String?,
+    onSubmit: (String, String) -> Unit,
 ) {
-    val (sequence, pressModifier, resetSequence) = rememberPressSequence()
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ){
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(150.dp)
-                .clip(RoundedCornerShape(20.dp))
-                .background(MaterialTheme.colorScheme.primary)
-                .then(pressModifier),
-        ) {
-            Icon(
-                imageVector = Icons.Filled.TouchApp,
-                contentDescription = stringResource(R.string.touch),
-            )
-        }
-        Text(
-            text = sequence,
-            fontSize = 50.sp,
+        TouchSignalMessage(
+            submitText = stringResource(R.string.send),
+            onTranslate = onTranslate,
+            onSubmit = onSubmit
         )
-        Button(
-            onClick = {
-                sendSignal(
-                    languageSelected?.id,
-                    sequence,
-                    CommunicationMode.TOUCH
-                )
-                resetSequence()
-            }
-        ) {
-            Text(stringResource(R.string.send))
-        }
     }
 }
 
 @Composable
 fun LightMessageView(
-    languageSelected: Language?,
-    sendSignal: SendSignalHandler
+    onTranslate: (String) -> String?,
+    onSubmit: (String, String) -> Unit,
 ) {
-    // simulate light intensity changes TODO: remove later
-    var lightIntensity: Int by rememberSaveable { mutableStateOf(0) }
-    val lightColor = Color(255, 255, 255, lightIntensity * 255 / 100)
-    LaunchedEffect(lightIntensity) {
-        while (true) {
-            lightIntensity = (lightIntensity + 1) % 100
-            delay(1000)
-        }
-    }
-
-    Column {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(200.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(lightColor)
-        ) {
-            Icon(
-                imageVector = Icons.Filled.LightMode,
-                contentDescription = stringResource(R.string.touch),
-                tint = Color.Black
-            )
-        }
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ){
+        LightSignalMessage(
+            submitText = stringResource(R.string.send),
+            onTranslate = onTranslate,
+            onSubmit = onSubmit
+        )
     }
 }
 
 @Composable
 fun AutomaticMessageView(
     languageSelected: Language?,
-    sendSignal: SendSignalHandler
+    sendSignal: (String) -> Unit,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -274,13 +298,7 @@ fun AutomaticMessageView(
         if (languageSelected != null) {
             languageSelected.dictionary.forEach { (code, message) ->
                 Button(
-                    onClick = { 
-                        sendSignal(
-                            languageSelected.id,
-                            code,
-                            CommunicationMode.AUTO,
-                        )
-                    },
+                    onClick = { sendSignal(code) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 5.dp)
@@ -300,8 +318,11 @@ fun AutomaticMessageView(
 fun CommunicationScreenPreview() {
     CommunicationScreen(
         nav = NavController(LocalContext.current),
-        viewModel = CommunicationViewModel(LocalContext.current as Application, LanguagesRepository()),
+        viewModel = MessageSenderViewModel(LocalContext.current as Application),
         languageSelected = null,
-        portalSelected = null
+        portals = emptyList(),
+        currentPosition = Coordinates(0.0, 0.0),
+        onTranslate = { null },
+        onUpdateDictionary = { _, _ -> }
     )
 }

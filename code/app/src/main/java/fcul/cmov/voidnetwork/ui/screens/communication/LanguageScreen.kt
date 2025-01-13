@@ -1,6 +1,5 @@
 package fcul.cmov.voidnetwork.ui.screens.communication
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,13 +36,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.Language
-import fcul.cmov.voidnetwork.ui.utils.MAX_MESSAGE_LENGTH
-import fcul.cmov.voidnetwork.ui.utils.ScreenWithTopBar
-import fcul.cmov.voidnetwork.ui.utils.rememberPressSequence
+import fcul.cmov.voidnetwork.ui.utils.composables.TouchSignalMessage
+import fcul.cmov.voidnetwork.ui.utils.composables.ScreenWithTopBar
+import fcul.cmov.voidnetwork.ui.utils.composables.rememberUpdateDictionaryWithConfirmation
 import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel
 
 @Composable
@@ -67,12 +65,12 @@ fun LanguageScreen(
         LanguageScreenContent(
             modifier = Modifier.padding(paddingValues),
             language = viewModel.getLanguage(id),
-            onDeleteMessage = { code -> viewModel.onDeleteMessageFromLanguage(id, code) },
-            onUpdateLanguageDictionary = { code, msg ->
-                viewModel.onUpdateLanguageDictionary(id, code, msg)
+            onDeleteMessage = { code -> viewModel.deleteMessageFromLanguage(id, code) },
+            onUpdateDictionary = { signal, message ->
+                viewModel.updateLanguageDictionary(id, signal, message)
             },
             onDeleteLanguage = { viewModel.deleteLanguage(id) },
-            onEditLanguage = { viewModel.onEditLanguage(language.id, it) }
+            onEditLanguage = { viewModel.editLanguage(language.id, it) }
         )
     }
 }
@@ -80,13 +78,16 @@ fun LanguageScreen(
 @Composable
 fun LanguageScreenContent(
     language: Language,
-    onUpdateLanguageDictionary: (String, String) -> Unit,
+    onUpdateDictionary: (String, String) -> Unit,
     onDeleteMessage: (String) -> Unit,
     onDeleteLanguage: () -> Unit,
     onEditLanguage: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var isAddingMessage by rememberSaveable { mutableStateOf(false) }
+    val (replaceSignalPopup, onUpdateDictionaryWithConfirmation) =
+        rememberUpdateDictionaryWithConfirmation(language, onUpdateDictionary)
+    replaceSignalPopup()
     Column(
         modifier = modifier.fillMaxHeight().verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -114,11 +115,13 @@ fun LanguageScreenContent(
             modifier = Modifier.padding(20.dp)
         ) {
             if (isAddingMessage) {
-                AddMessageForm(
-                    onUpdateLanguageDictionary = { code, msg ->
-                        onUpdateLanguageDictionary(code, msg)
+                TouchSignalMessage(
+                    submitText = stringResource(R.string.add_message),
+                    onSubmit = { signal, msg ->
+                        onUpdateDictionaryWithConfirmation(signal, msg)
                         isAddingMessage = false
-                    }
+                    },
+                    messageRequired = true
                 )
             }
             Button(onClick = { isAddingMessage = !isAddingMessage }) {
@@ -165,7 +168,7 @@ fun LanguageTopView(
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.background,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+                    contentColor = MaterialTheme.colorScheme.onSecondary
                 )
             ) {
                 Icon(
@@ -183,7 +186,7 @@ fun LanguageTopView(
                 onClick = { isEditing = true },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.background,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+                    contentColor = MaterialTheme.colorScheme.onSecondary
                 )
             ) {
                 Icon(
@@ -196,7 +199,7 @@ fun LanguageTopView(
             onClick = onDeleteLanguage,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.background,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                contentColor = MaterialTheme.colorScheme.onSecondary
             )
         ) {
             Icon(
@@ -204,56 +207,6 @@ fun LanguageTopView(
                 contentDescription = stringResource(R.string.delete_language),
                 modifier = Modifier.size(24.dp)
             )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AddMessageForm(
-    onUpdateLanguageDictionary: (String, String) -> Unit
-) {
-    var message by rememberSaveable { mutableStateOf("") }
-    val (sequence, pressModifier, resetSequence) = rememberPressSequence()
-    Column(
-        modifier = Modifier.padding(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        TextField(
-            value = message,
-            onValueChange = { message = it.take(MAX_MESSAGE_LENGTH) },
-            label = { Text(stringResource(R.string.enter_translation)) },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Box(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.secondary)
-                .padding(16.dp)
-                .fillMaxWidth()
-                .then(pressModifier),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = stringResource(R.string.hold_or_tap),
-                color = MaterialTheme.colorScheme.onSecondary,
-                style = MaterialTheme.typography.bodyLarge
-            )
-        }
-        Text(
-            text = sequence,
-            fontSize = 40.sp,
-            modifier = Modifier.padding(0.dp)
-        )
-        Button(
-            onClick = {
-                onUpdateLanguageDictionary(sequence, message)
-                resetSequence()
-                message = ""
-            },
-            enabled = sequence.isNotBlank() && message.isNotBlank()
-        ) {
-            Text(text = stringResource(R.string.add_message))
         }
     }
 }
@@ -326,7 +279,7 @@ fun LanguageDictionary(
                         contentPadding = PaddingValues(4.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.background,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
+                            contentColor = MaterialTheme.colorScheme.onSecondary
                         ),
                         modifier = Modifier.weight(0.5f)
                     ) {

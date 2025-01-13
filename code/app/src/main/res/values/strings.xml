@@ -1,14 +1,10 @@
 <resources>
     <string name="app_name">Void Network</string>
     <string name="mapbox_access_token">sk.eyJ1IjoibWNhcmRvc285NCIsImEiOiJjbTRpdDM5bG4wNmRiMmtyM3Z0cW0xamNmIn0.ECJbNiR04gCmt4rkUHBbzQ</string>
-
-    <!-- languages -->
     <string name="add_language">Add Language</string>
     <string name="add_edit_language">Add/Edit Language</string>
     <string name="language_selection">Language Selection</string>
     <string name="select_language">Select Language</string>
-
-    <!-- messages -->
     <string name="send_auto_message">Send Automatic Message</string>
     <string name="send_manual_message">Send Manual Message</string>
     <string name="touch">Touch</string>
@@ -17,19 +13,12 @@
     <string name="automatic_message">Automatic Message</string>
     <string name="touch_message">Touch Message</string>
     <string name="light_message">Light Message</string>
-
-    <!-- portals -->
-    <string name="no_portal_selected">No Portal Selected</string>
+    <string name="no_portals_nearby">No Portals Nearby</string>
     <string name="portal_selected">Portal Selected</string>
     <string name="add_portal">Add Portal</string>
     <string name="register_portal">Register Portal</string>
     <string name="upside_down_portals">Upside Down Portals</string>
     <string name="portal_captured_with_camera">Portal Captured with Camera</string>
-
-    <!-- music player -->
-    <string name="music_player">Music Player</string>
-
-    <!-- others -->
     <string name="out_of_range">Out of Range</string>
     <string name="open_camera">Open Camera</string>
     <string name="waiting_for_photo_verification">Waiting for photo verification</string>
@@ -58,4 +47,31 @@
     <string name="actions">Actions</string>
     <string name="language_name">Language Name</string>
     <string name="save_changes">Save Changes</string>
+    <string name="capture_photo">Take Photo</string>
+    <string name="luminosity">Luminosity</string>
+    <string name="recent_messages">Recent Messages</string>
+    <string name="no_messages">No messages</string>
+    <string name="unknown">Unknown</string>
+    <string name="in_upside_down">In Upside Down</string>
+    <string name="in_real_world">In Real World</string>
+    <string name="allow_receive_signals">Allow Receive Signals</string>
+    <string name="replace">Replace</string>
+    <string name="signal_already_in_dictionary">Signal Already in Use</string>
+    <string name="replace_signal_question">The signal \'{signal}\' is already in use for the message \'{message}\'</string>
+    <string name="do_you_want_to_replace_it">Do you want to replace it?</string>
+    <string name="listening_for_signals">Listening for Signals</string>
+    <string name="receiving_messages">Receiving Messages</string>
+    <string name="new_signal_received">New Signal Received</string>
+    <string name="message_sender_icon">Message Sender Icon</string>
+    <string name="current_position">Current Position</string>
+    <string name="sensors_info">Sensors Info</string>
+    <string name="gps">GPS</string>
+    <string name="x_km_away">{distance} km away</string>
+    <string name="portal_info">Portal Info</string>
+    <string name="in_range">In Range</string>
+    <string name="no_photo_captured">No photo captured</string>
+    <string name="photo_captured">Photo Captured</string>
+    <string name="hide_portals">Hide Portals</string>
+    <string name="show_portals">Show Portals</string>
+    <string name="navigate_to_portal">Navigate to Portal</string>
 </resources>

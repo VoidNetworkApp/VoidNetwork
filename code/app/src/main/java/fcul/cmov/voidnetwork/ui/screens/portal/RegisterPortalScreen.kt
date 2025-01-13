@@ -1,7 +1,5 @@
 package fcul.cmov.voidnetwork.ui.screens.portal
 
-import android.content.Context
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
@@ -12,41 +10,39 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
 import fcul.cmov.voidnetwork.R
+import fcul.cmov.voidnetwork.domain.Coordinates
 import fcul.cmov.voidnetwork.ui.navigation.Screens
-import fcul.cmov.voidnetwork.ui.utils.ScreenWithTopBar
+import fcul.cmov.voidnetwork.ui.utils.composables.CameraButton
+import fcul.cmov.voidnetwork.ui.utils.composables.CameraPhoto
+import fcul.cmov.voidnetwork.ui.utils.composables.ScreenWithTopBar
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Objects
 
 @Composable
 fun RegisterPortalScreen(
     nav: NavController,
     viewModel: PortalViewModel,
-    latitude: Double?,
-    longitude: Double?
+    currentLocation: Coordinates?
 ) {
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        if (viewModel.capturedImageUri == null) {
+            viewModel.createImageUri(context)
+        }
+    }
     ScreenWithTopBar(
         title = stringResource(R.string.register_portal),
         nav = nav
@@ -54,8 +50,12 @@ fun RegisterPortalScreen(
         RegisterPortalScreenContent(
             nav = nav,
             modifier = Modifier.padding(paddingValues),
-            latitude = latitude,
-            longitude = longitude
+            capturedImageUri = viewModel.capturedImageUri,
+            onPhotoCaptured = { viewModel.capturedImageUri = it },
+            onRegisterPortal = {
+                currentLocation?.let { viewModel.registerPortal(it) }
+                nav.navigateUp()
+            },
         )
     }
 }
@@ -63,9 +63,10 @@ fun RegisterPortalScreen(
 @Composable
 fun RegisterPortalScreenContent(
     nav: NavController,
+    capturedImageUri: Uri?,
+    onPhotoCaptured: (Uri) -> Unit,
+    onRegisterPortal: () -> Unit,
     modifier: Modifier = Modifier,
-    latitude: Double?,
-    longitude: Double?
 ) {
     val context = LocalContext.current
     val file = context.createImageFile()
@@ -104,32 +105,19 @@ fun RegisterPortalScreenContent(
         Button(onClick = { if (latitude != null && longitude != null) { marker(latitude, longitude) }
             nav.navigate(Screens.Main.route)
                          }, enabled = true) {
-            Text(stringResource(R.string.register_portal))
-        }
-        Text(stringResource(R.string.waiting_for_photo_verification))
-        Button(onClick = { val permissionCheckResult =
-            ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA)
-            if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
-                cameraLauncher.launch(uri)
-            } else {
-                // Request a permission
-                permissionLauncher.launch(android.Manifest.permission.CAMERA)
-            }
-        }) {
-            Text(stringResource(R.string.open_camera))
-        }
-    }
-}
 
-//Auxiliar function to create file name
-fun Context.createImageFile(): File {
-    // Create an image file name
-    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-    val imageFileName = "JPEG_" + timeStamp + "_"
-    val image = File.createTempFile(
-        imageFileName, /* prefix */
-        ".jpg", /* suffix */
-        externalCacheDir /* directory */
-    )
-    return image
+        /* CameraPhoto(capturedImageUri)
+        Button(
+            enabled = true, // TODO: only when photo is verified to be a portal
+            onClick = onRegisterPortal,
+        ) {
+            Text(stringResource(R.string.register_portal))
+        } */
+        Text(stringResource(R.string.waiting_for_photo_verification))
+        CameraButton(
+            onPhotoCaptured = { onPhotoCaptured(it) },
+            text = stringResource(R.string.capture_photo),
+            uri = capturedImageUri ?: Uri.EMPTY
+        )
+    }
 }
