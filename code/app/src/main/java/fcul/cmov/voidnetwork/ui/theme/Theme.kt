@@ -1,19 +1,19 @@
 package fcul.cmov.voidnetwork.ui.theme
 
 import android.app.Activity
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.material3.ColorScheme
+import androidx.compose.runtime.getValue
 
 private val darkColorScheme = darkColorScheme(
     primary = BloodRed,
@@ -32,7 +32,7 @@ private val lightColorScheme = lightColorScheme(
     primary = LightBloodRed,
     secondary = SoftCrimson,
     tertiary = PaleMaroon,
-    background = AlmostWhite,
+    background = White,
     surface = LightGray,
     onPrimary = White,
     onSecondary = Black,
@@ -43,16 +43,16 @@ private val lightColorScheme = lightColorScheme(
 
 @Composable
 fun VoidNetworkTheme(
-    darkTheme: Boolean = true,
+    darkTheme: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) darkColorScheme else lightColorScheme
+    val colorScheme = rememberDynamicColorScheme(darkTheme)
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
             window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
 
@@ -60,5 +60,38 @@ fun VoidNetworkTheme(
         colorScheme = colorScheme,
         typography = Typography,
         content = content
+    )
+}
+
+@Composable
+fun rememberDynamicColorScheme(darkTheme: Boolean): ColorScheme {
+    val targetColors = if (darkTheme) darkColorScheme else lightColorScheme
+    val animatedColors = with(targetColors) {
+        mapOf(
+            "primary" to primary,
+            "secondary" to secondary,
+            "tertiary" to tertiary,
+            "background" to background,
+            "surface" to surface,
+            "onPrimary" to onPrimary,
+            "onSecondary" to onSecondary,
+            "onTertiary" to onTertiary,
+            "onBackground" to onBackground,
+            "onSurface" to onSurface
+        ).mapValues { (_, color) ->
+            animateColorAsState(color, tween(durationMillis = 1000), label = "").value
+        }
+    }
+    return targetColors.copy(
+        primary = animatedColors["primary"]!!,
+        secondary = animatedColors["secondary"]!!,
+        tertiary = animatedColors["tertiary"]!!,
+        background = animatedColors["background"]!!,
+        surface = animatedColors["surface"]!!,
+        onPrimary = animatedColors["onPrimary"]!!,
+        onSecondary = animatedColors["onSecondary"]!!,
+        onTertiary = animatedColors["onTertiary"]!!,
+        onBackground = animatedColors["onBackground"]!!,
+        onSurface = animatedColors["onSurface"]!!
     )
 }
