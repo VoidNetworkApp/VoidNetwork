@@ -33,6 +33,7 @@ import fcul.cmov.voidnetwork.domain.Coordinates
 import fcul.cmov.voidnetwork.ui.utils.composables.CameraButton
 import fcul.cmov.voidnetwork.ui.utils.composables.ScreenWithTopBar
 import fcul.cmov.voidnetwork.ui.utils.composables.createImageFile
+//import fcul.cmov.voidnetwork.ui.utils.imageLabeling
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 import java.util.Objects
 
@@ -92,7 +93,10 @@ fun RegisterPortalScreenContent(
         )
         Button(
             enabled = true, // TODO Add Verified portal logic
-            onClick = onRegisterPortal,
+            onClick = {
+                //imageLabeling(file)
+                //onRegisterPortal
+                      },
         ) {
             Text(stringResource(R.string.register_portal))
         }
