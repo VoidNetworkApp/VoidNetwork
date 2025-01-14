@@ -15,7 +15,5 @@
 local.properties
 .idea
 **/.idea/
-# Mapbox
-code/app/src/main/res/values/secrets.xml
-# Firebase
+secrets.xml
 google-services.json
