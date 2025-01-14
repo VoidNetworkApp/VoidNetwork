@@ -226,7 +226,6 @@ fun PortalsScreenContent(
     }
 }
 
-<<<<<<< HEAD
 fun arrangePortals(portals: List<Portal>, currentPosition: Coordinates?): List<Portal> {
     var map: MutableMap<Portal, Float> = mutableMapOf()
     for(portal in portals) {
@@ -239,8 +238,6 @@ fun arrangePortals(portals: List<Portal>, currentPosition: Coordinates?): List<P
     return map.keys.toList()
 }
 
-=======
->>>>>>> 22729be06538ef2a7b7f9546951ccb93125f6b61
 @Composable
 fun MapboxScreen(
     onUpdateMapView: (MapView) -> Unit,
