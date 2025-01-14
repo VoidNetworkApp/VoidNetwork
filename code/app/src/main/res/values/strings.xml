@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Void Network</string>
-    <string name="mapbox_access_token">sk.eyJ1IjoibWNhcmRvc285NCIsImEiOiJjbTRpdDM5bG4wNmRiMmtyM3Z0cW0xamNmIn0.ECJbNiR04gCmt4rkUHBbzQ</string>
     <string name="add_language">Add Language</string>
     <string name="add_edit_language">Add/Edit Language</string>
     <string name="language_selection">Language Selection</string>
