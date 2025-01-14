@@ -154,7 +154,11 @@ fun PortalsScreenContent(
                 )
                 LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
 
-                    val portalsSorted = arrangePortals(portals, currentPosition)
+                    val portalsSorted = currentPosition?.let { pos ->
+                        portals.sortedBy { portal ->
+                            calculateDistance(pos, portal.coordinates)
+                        }
+                    } ?: portals
 
                     items(portalsSorted) { portal ->
                         var distance by remember { mutableStateOf<Float?>(null) }
@@ -224,18 +228,6 @@ fun PortalsScreenContent(
             )
         }
     }
-}
-
-fun arrangePortals(portals: List<Portal>, currentPosition: Coordinates?): List<Portal> {
-    var map: MutableMap<Portal, Float> = mutableMapOf()
-    for(portal in portals) {
-        if(currentPosition != null) {
-            map[portal] = calculateDistance(currentPosition, portal.coordinates)
-        }
-    }
-    map = map.toList().sortedBy { (_, value) -> value }.toMap().toMutableMap()
-
-    return map.keys.toList()
 }
 
 @Composable
