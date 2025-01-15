@@ -45,9 +45,14 @@ android {
     }
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes +=  "/META-INF/{AL2.0,LGPL2.1}"
+            excludes +=  "META-INF/DEPENDENCIES"
+            excludes +=  "META-INF/INDEX.LIST"
+            excludes += "mozilla/public-suffix-list.txt"
         }
     }
+
+
 }
 
 dependencies {
@@ -91,8 +96,9 @@ dependencies {
     implementation("com.mapbox.maps:android:11.8.1")
     implementation("com.mapbox.extension:maps-compose:11.8.1")
 
-    // Cloud Vision
-    //implementation("com.google.cloud:google-cloud-vision:3.53.0")
+    // MLKit
+    implementation("com.google.mlkit:image-labeling:17.0.9")
+
 
     // Permissions
     implementation("com.google.accompanist:accompanist-permissions:0.28.0")

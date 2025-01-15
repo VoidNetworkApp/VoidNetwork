@@ -33,7 +33,7 @@ import fcul.cmov.voidnetwork.domain.Coordinates
 import fcul.cmov.voidnetwork.ui.utils.composables.CameraButton
 import fcul.cmov.voidnetwork.ui.utils.composables.ScreenWithTopBar
 import fcul.cmov.voidnetwork.ui.utils.composables.createImageFile
-//import fcul.cmov.voidnetwork.ui.utils.imageLabeling
+import fcul.cmov.voidnetwork.ui.utils.imageLabeling
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 import java.util.Objects
 
@@ -76,6 +76,7 @@ fun RegisterPortalScreenContent(
 ) {
     val context = LocalContext.current
     val file = context.createImageFile()
+    var photoCaptured by remember { mutableStateOf(false) }
     Log.d("TAG_FilePath", file.absolutePath)
     Column(
         modifier = modifier.fillMaxSize(),
@@ -92,9 +93,16 @@ fun RegisterPortalScreenContent(
                 .background(Color.Black)
         )
         Button(
-            enabled = true, // TODO Add Verified portal logic
+            enabled = photoCaptured, // TODO Add Verified portal logic
             onClick = {
-                //imageLabeling(file)
+                Log.d("MLLog", "Button Clicked")
+                if (capturedImageUri != null) {
+                    Log.d("MLLog", "Available URI")
+                    imageLabeling(context, capturedImageUri)
+                } else {
+                    Log.d("MLLog", "URI not available")
+                }
+
                 //onRegisterPortal
                       },
         ) {
@@ -102,7 +110,10 @@ fun RegisterPortalScreenContent(
         }
         Text(stringResource(R.string.waiting_for_photo_verification))
         CameraButton(
-            onPhotoCaptured = { onPhotoCaptured(it) },
+            onPhotoCaptured = {
+                photoCaptured = true
+                onPhotoCaptured(it)
+                              },
             text = stringResource(R.string.capture_photo),
             uri = capturedImageUri ?: Uri.EMPTY
         )
