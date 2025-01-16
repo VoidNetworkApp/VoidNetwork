@@ -25,6 +25,7 @@ import com.mapbox.maps.plugin.annotation.generated.createCircleAnnotationManager
 import com.mapbox.maps.plugin.annotation.generated.createPolygonAnnotationManager
 import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.Coordinates
+import fcul.cmov.voidnetwork.domain.Labels
 import fcul.cmov.voidnetwork.domain.Portal
 import fcul.cmov.voidnetwork.ui.theme.BloodRed
 import fcul.cmov.voidnetwork.ui.utils.MAX_DISTANCE_FROM_PORTAL
@@ -42,7 +43,7 @@ class PortalViewModel(application: Application) : AndroidViewModel(application) 
 
     private val portalsRef = Firebase.database.getPortals()
     var portals by mutableStateOf<List<Portal>>(emptyList())
-    var capturedImageUri by mutableStateOf<Uri?>(null)
+    var capturedImageUri by mutableStateOf<Uri>(Uri.EMPTY)
 
     init {
         fetchPortalsFromFirebase()

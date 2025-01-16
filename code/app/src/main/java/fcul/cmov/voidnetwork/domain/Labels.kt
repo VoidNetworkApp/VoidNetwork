@@ -1,9 +1,10 @@
 package fcul.cmov.voidnetwork.domain
 
 data class Labels(
-    var lables: ArrayList<Label>
+    val lables: ArrayList<Label>,
+    var detectedTrees: Boolean
 ) {
-    constructor() : this(ArrayList<Label>())
+    constructor() : this(ArrayList<Label>(), false)
 }
 
 data class Label(
