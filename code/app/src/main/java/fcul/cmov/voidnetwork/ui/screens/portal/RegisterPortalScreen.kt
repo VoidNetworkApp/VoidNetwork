@@ -94,11 +94,11 @@ fun RegisterPortalScreenContent(
         // TODO Second new photo doesn't appear
         CameraPhoto(capturedImageUri)
         Button(
-            enabled = photoLabels.lables.isNotEmpty() || photoLabels.detectedTrees,
+            enabled = photoLabels.lables.isNotEmpty() && photoLabels.detectedTrees,
             onClick = {
                 Log.d("MLLog12", capturedImageUri.toString())
                 onRegisterPortal()
-                //nav.popBackStack()
+                nav.popBackStack()
             },
         ) {
             Text(stringResource(R.string.register_portal))
@@ -138,7 +138,8 @@ fun RegisterPortalScreenContent(
 @Composable
 fun LabelItems(labels: Labels) {
     for(label in labels.lables) {
-        Text(label.text + " " + label.confidence.toString() + " " + label.index.toString())
+        //Text(label.text + " " + label.confidence.toString() + " " + label.index.toString())
+        Log.d("MLLogLabels", label.text + " " + label.confidence.toString() + " " + label.index.toString())
     }
 }
 

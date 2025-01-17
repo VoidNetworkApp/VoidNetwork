@@ -43,7 +43,7 @@ class PortalViewModel(application: Application) : AndroidViewModel(application) 
 
     private val portalsRef = Firebase.database.getPortals()
     var portals by mutableStateOf<List<Portal>>(emptyList())
-    var capturedImageUri by mutableStateOf<Uri>(Uri.EMPTY)
+    var capturedImageUri by mutableStateOf<Uri?>(null)
 
     init {
         fetchPortalsFromFirebase()
