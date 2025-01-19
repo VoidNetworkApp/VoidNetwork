@@ -95,6 +95,9 @@ dependencies {
     implementation("com.mapbox.maps:android:11.8.1")
     implementation("com.mapbox.extension:maps-compose:11.8.1")
 
+    // MLKit
+    implementation("com.google.mlkit:image-labeling:17.0.9")
+
     // Permissions
     implementation("com.google.accompanist:accompanist-permissions:0.28.0")
 

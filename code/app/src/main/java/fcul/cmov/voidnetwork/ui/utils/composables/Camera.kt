@@ -6,12 +6,16 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -34,8 +38,12 @@ fun CameraPhoto(
                 .data(uri)
                 .crossfade(true)
                 .build(),
+            placeholder = painterResource(R.drawable.treeportal),
+            error = painterResource(R.drawable.treeportal),
             contentDescription = stringResource(id = R.string.photo_captured),
-            modifier = modifier.size(200.dp),
+            modifier = modifier
+                .size(300.dp)
+                .background(Color.Black),
         )
     } else {
         Text(text = stringResource(id = R.string.no_photo_captured))
@@ -51,6 +59,7 @@ fun CameraButton(
 ) {
     val context = LocalContext.current
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        //capturedImageUri = uri
         if (success) {
             onPhotoCaptured(uri)
         }
