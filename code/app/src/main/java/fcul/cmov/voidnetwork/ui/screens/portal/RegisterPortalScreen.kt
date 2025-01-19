@@ -1,8 +1,6 @@
 package fcul.cmov.voidnetwork.ui.screens.portal
 
-import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,25 +8,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.Coordinates
-import fcul.cmov.voidnetwork.domain.Labels
 import fcul.cmov.voidnetwork.ui.utils.composables.CameraButton
 import fcul.cmov.voidnetwork.ui.utils.composables.CameraPhoto
 import fcul.cmov.voidnetwork.ui.utils.composables.ScreenWithTopBar
-import fcul.cmov.voidnetwork.ui.utils.composables.createImageFile
-import fcul.cmov.voidnetwork.ui.utils.imageLabeling
+import fcul.cmov.voidnetwork.ui.utils.scanPortalInCapturedImage
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,24 +35,19 @@ fun RegisterPortalScreen(
     viewModel: PortalViewModel,
     currentLocation: Coordinates?
 ) {
-    val context = LocalContext.current
-    LaunchedEffect(Unit) {
-        if (viewModel.capturedImageUri == null) {
-            viewModel.createImageUri(context)
-        }
-    }
+    var capturedImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     ScreenWithTopBar(
         title = stringResource(R.string.register_portal),
         nav = nav
     ) { paddingValues ->
         RegisterPortalScreenContent(
-            nav = nav,
             modifier = Modifier.padding(paddingValues),
-            capturedImageUri = viewModel.capturedImageUri,
-            onPhotoCaptured = { viewModel.capturedImageUri = it },
+            capturedImageUri = capturedImageUri,
+            onPhotoCaptured = { capturedImageUri = it },
+            locationEnabled = currentLocation != null,
             onRegisterPortal = {
                 currentLocation?.let { viewModel.registerPortal(it) }
-                nav.navigateUp()
+                nav.popBackStack()
             },
         )
     }
@@ -65,77 +55,51 @@ fun RegisterPortalScreen(
 
 @Composable
 fun RegisterPortalScreenContent(
-    nav: NavController,
     modifier: Modifier = Modifier,
     capturedImageUri: Uri?,
+    locationEnabled: Boolean,
     onPhotoCaptured: (Uri) -> Unit,
     onRegisterPortal: () -> Unit,
 ) {
     val context = LocalContext.current
-    var photoLabels by remember { mutableStateOf(Labels()) }
+    var portalDetected by remember { mutableStateOf<Boolean?>(null) }
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly,
     ) {
-        // TODO Second new photo doesn't appear
         CameraPhoto(capturedImageUri)
         Button(
-            enabled = photoLabels.lables.isNotEmpty() && photoLabels.detectedTrees,
-            onClick = {
-                Log.d("MLLog12", capturedImageUri.toString())
-                onRegisterPortal()
-                nav.popBackStack()
-            },
+            enabled = portalDetected == true && locationEnabled,
+            onClick = onRegisterPortal,
         ) {
             Text(stringResource(R.string.register_portal))
         }
 
-        if(photoLabels.lables.isEmpty()) {
-            Text(stringResource(R.string.waiting_for_photo_verification))
-        } else {
-            LabelItems(photoLabels)
-            if (photoLabels.detectedTrees) {
-                Text("Portal Found, want to register it?")
+        if (locationEnabled) {
+            if (portalDetected == null) {
+                Text(stringResource(R.string.waiting_for_photo_verification))
             } else {
-                Text("Portal not Found, try again")
+                if (portalDetected == true) {
+                    Text(stringResource(R.string.portal_detected))
+                } else {
+                    Text(stringResource(R.string.portal_not_found))
+                }
+            }
+            CameraButton(
+                onPhotoCaptured = {
+                    onPhotoCaptured(it)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        portalDetected = scanPortalInCapturedImage(context, it)
+                    }
+                },
+                text = stringResource(R.string.capture_photo),
+            )
+        } else {
+            Column {
+                Text(stringResource(R.string.location_disabled))
+                Text(stringResource(R.string.enable_location_to_register_portal))
             }
         }
-        Log.d("MLLog1", capturedImageUri.toString())
-        CameraButton(
-            onPhotoCaptured = {
-                onPhotoCaptured(it)
-                Log.d("MLLog", "Button Clicked")
-                if (capturedImageUri != null) {
-                    Log.d("MLLog", "Available URI")
-                    CoroutineScope(Dispatchers.IO).launch {
-                        photoLabels =  imageLabeling(context, capturedImageUri) ?: Labels()
-                    }
-                    Log.d("MLLog11", capturedImageUri.toString())
-                } else {
-                    Log.d("MLLog", "URI not available")
-                }
-            },
-            text = stringResource(R.string.capture_photo),
-            uri = capturedImageUri ?: Uri.EMPTY
-        )
     }
-}
-
-@Composable
-fun LabelItems(labels: Labels) {
-    for(label in labels.lables) {
-        //Text(label.text + " " + label.confidence.toString() + " " + label.index.toString())
-        Log.d("MLLogLabels", label.text + " " + label.confidence.toString() + " " + label.index.toString())
-    }
-}
-
-fun createImageUri(context: Context ): Uri {
-    val imageFile = context.createImageFile()
-    var capturedImageUri = FileProvider.getUriForFile(
-        context,
-        "${context.packageName}.provider",
-        imageFile
-    )
-    return capturedImageUri
 }

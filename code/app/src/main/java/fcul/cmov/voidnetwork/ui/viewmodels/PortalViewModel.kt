@@ -1,14 +1,11 @@
 package fcul.cmov.voidnetwork.ui.viewmodels
 
 import android.app.Application
-import android.content.Context
-import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.toArgb
-import androidx.core.content.FileProvider
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.database.DataSnapshot
@@ -25,11 +22,9 @@ import com.mapbox.maps.plugin.annotation.generated.createCircleAnnotationManager
 import com.mapbox.maps.plugin.annotation.generated.createPolygonAnnotationManager
 import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.Coordinates
-import fcul.cmov.voidnetwork.domain.Labels
 import fcul.cmov.voidnetwork.domain.Portal
 import fcul.cmov.voidnetwork.ui.theme.BloodRed
 import fcul.cmov.voidnetwork.ui.utils.MAX_DISTANCE_FROM_PORTAL
-import fcul.cmov.voidnetwork.ui.utils.composables.createImageFile
 import fcul.cmov.voidnetwork.ui.utils.createCirclePoints
 import fcul.cmov.voidnetwork.ui.utils.getPortals
 import kotlinx.coroutines.Dispatchers
@@ -43,7 +38,6 @@ class PortalViewModel(application: Application) : AndroidViewModel(application) 
 
     private val portalsRef = Firebase.database.getPortals()
     var portals by mutableStateOf<List<Portal>>(emptyList())
-    var capturedImageUri by mutableStateOf<Uri?>(null)
 
     init {
         fetchPortalsFromFirebase()
@@ -58,7 +52,7 @@ class PortalViewModel(application: Application) : AndroidViewModel(application) 
         val context = getApplication<Application>().applicationContext
         val mapView = MapView(context)
         getStreetName(mapView, currentPosition) { street ->
-            if (street == null) return@getStreetName
+            requireNotNull(street) { "Failed to fetch street name" }
             val newRef = portalsRef.push()
             val newId = newRef.key ?: throw IllegalStateException("Failed to generate a new key for the portal")
             val portal = Portal(newId, street, currentPosition)
@@ -89,20 +83,12 @@ class PortalViewModel(application: Application) : AndroidViewModel(application) 
         polygonAnnotationManager.create(polygonAnnotationOptions)
     }
 
-    fun createImageUri(context: Context) {
-        val imageFile = context.createImageFile()
-        capturedImageUri = FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.provider",
-            imageFile
-        )
-    }
-
     private fun getStreetName(
         view: MapView,
         coordinates: Coordinates,
         onResult: (String?) -> Unit
     ) {
+
         viewModelScope.launch {
             val (latitude, longitude) = coordinates
             val accessToken = view.context.getString(R.string.mapbox_access_token)
