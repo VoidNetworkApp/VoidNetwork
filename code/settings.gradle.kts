@@ -2,31 +2,29 @@ import org.w3c.dom.Element
 import java.io.FileNotFoundException
 import javax.xml.parsers.DocumentBuilderFactory
 
-val secretsFile = file("app/src/main/res/values/secrets.xml") // Adjust path if needed
-val mapboxKey: String = if (secretsFile.exists()) {
+fun getMapboxAccessToken(): String {
+    val secretsFile = file("app/src/main/res/values/secrets.xml")
+    if (!secretsFile.exists()) {
+        throw FileNotFoundException("secrets.xml not found at ${secretsFile.absolutePath}")
+    }
     val document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(secretsFile)
     val root = document.documentElement
     val stringElements = root.getElementsByTagName("string")
-
-    (0 until stringElements.length)
+    return (0 until stringElements.length)
         .asSequence()
         .map { stringElements.item(it) as Element }
         .find { it.getAttribute("name") == "mapbox_access_token" }
-        ?.textContent ?: throw IllegalArgumentException("mapbox_access_token not found in secrets.xml")
-} else {
-    throw FileNotFoundException("secrets.xml not found at ${secretsFile.absolutePath}")
+        ?.textContent
+        ?: throw IllegalArgumentException("mapbox_access_token not found in secrets.xml")
 }
 
-println("Mapbox Key Loaded in settings.gradle.kts: $mapboxKey")
-
+val mapboxKey = getMapboxAccessToken()
 gradle.extra.set("mapboxKey", mapboxKey)
-
 
 pluginManagement {
     repositories {
         google()
         mavenCentral()
-
         gradlePluginPortal()
     }
 }
@@ -35,11 +33,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // Mapbox Maven repository
         maven {
             url = uri("https://api.mapbox.com/downloads/v2/releases/maven")
             credentials {
-                // Add your Mapbox token here if required
                 username = "mapbox"
                 password = mapboxKey
             }

@@ -4,7 +4,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import fcul.cmov.voidnetwork.ui.utils.LONG
-import fcul.cmov.voidnetwork.ui.utils.MAX_INACTIVITY_DURATION
 import fcul.cmov.voidnetwork.ui.utils.MIN_CODE_DURATION_SHORT
 import fcul.cmov.voidnetwork.ui.utils.SHORT
 import kotlinx.coroutines.delay

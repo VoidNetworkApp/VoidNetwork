@@ -22,6 +22,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.Priority
 import fcul.cmov.voidnetwork.domain.Coordinates
+import fcul.cmov.voidnetwork.repository.SharedStateManager
 
 const val LOCATION_REQUEST_INTERVAL = 10000L
 const val LOCATION_REQUEST_MIN_INTERVAL = 5000L
@@ -34,6 +35,11 @@ fun rememberCurrentLocation(
     val context = LocalContext.current
     var currentLocation by remember { mutableStateOf<Coordinates?>(null) }
     val locationManager = remember { context.getSystemService(Context.LOCATION_SERVICE) as LocationManager }
+
+    LaunchedEffect(currentLocation) {
+        // required to share the location with foreground service
+        SharedStateManager.lastKnownLocation = currentLocation
+    }
 
     // for location updates
     val locationCallback = remember {

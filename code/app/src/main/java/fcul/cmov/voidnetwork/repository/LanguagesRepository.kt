@@ -1,22 +1,19 @@
 package fcul.cmov.voidnetwork.repository
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import fcul.cmov.voidnetwork.domain.Language
 
 object LanguagesRepository {
-    private var languages by mutableStateOf<List<Language>>(emptyList())
+    private val languages = mutableListOf<Language>()
 
     operator fun plusAssign(language: Language) {
         synchronized(this) {
-            languages += language
+            languages.add(language)
         }
     }
 
     operator fun minusAssign(language: Language) {
         synchronized(this) {
-            languages = languages.filter { it.id != language.id }
+            languages.remove(language)
         }
     }
 
@@ -28,7 +25,8 @@ object LanguagesRepository {
 
     fun update(updatedLanguage: Language) {
         synchronized(this) {
-            languages = languages.map { if (it.id == updatedLanguage.id) updatedLanguage else it }
+            val index = languages.indexOfFirst { it.id == updatedLanguage.id }
+            if (index != -1) languages[index] = updatedLanguage
         }
     }
 
@@ -40,7 +38,8 @@ object LanguagesRepository {
 
     fun load(languages: List<Language>) {
         synchronized(this) {
-            this.languages = languages
+            this.languages.clear()
+            this.languages.addAll(languages)
         }
     }
 }

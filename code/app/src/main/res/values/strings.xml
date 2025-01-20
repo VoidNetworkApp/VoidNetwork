@@ -73,4 +73,11 @@
     <string name="hide_portals">Hide Portals</string>
     <string name="show_portals">Show Portals</string>
     <string name="navigate_to_portal">Navigate to Portal</string>
+    <string name="portal_detected">Portal Detected!</string>
+    <string name="portal_not_found">Portal Not Found</string>
+    <string name="location_disabled">Location Disabled</string>
+    <string name="enable_location_to_register_portal">Please Turn on GPS to Register Portal</string>
+    <string name="cannot_edit_language_in_upside_down">Cannot Edit Language in Upside Down</string>
+    <string name="cannot_send_messages">Cannot Send Messages</string>
+    <string name="outside_portal_range">(Outside Portal Range)</string>
 </resources>
