@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -42,6 +43,7 @@ import fcul.cmov.voidnetwork.domain.Language
 import fcul.cmov.voidnetwork.ui.utils.composables.TouchSignalMessage
 import fcul.cmov.voidnetwork.ui.utils.composables.ScreenWithTopBar
 import fcul.cmov.voidnetwork.ui.utils.composables.rememberUpdateDictionaryWithConfirmation
+import fcul.cmov.voidnetwork.ui.utils.composables.rememberUpsideDownState
 import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel
 
 @Composable
@@ -85,11 +87,14 @@ fun LanguageScreenContent(
     modifier: Modifier = Modifier
 ) {
     var isAddingMessage by rememberSaveable { mutableStateOf(false) }
+    val inUpsideDown = rememberUpsideDownState()
     val (replaceSignalPopup, onUpdateDictionaryWithConfirmation) =
         rememberUpdateDictionaryWithConfirmation(language, onUpdateDictionary)
     replaceSignalPopup()
     Column(
-        modifier = modifier.fillMaxHeight().verticalScroll(rememberScrollState()),
+        modifier = modifier
+            .fillMaxHeight()
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly
     ) {
@@ -97,14 +102,20 @@ fun LanguageScreenContent(
             language = language,
             onDeleteLanguage = onDeleteLanguage,
             onEditLanguage = onEditLanguage,
-            modifier = Modifier.fillMaxWidth().padding(20.dp)
+            enableEditing = !inUpsideDown,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
         )
         Box(
-            modifier = Modifier.fillMaxWidth().weight(1f)
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
         ) {
             LanguageDictionary(
                 language = language,
                 onDeleteMessage = onDeleteMessage,
+                enableEditing = !inUpsideDown,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -124,10 +135,20 @@ fun LanguageScreenContent(
                     messageRequired = true
                 )
             }
-            Button(onClick = { isAddingMessage = !isAddingMessage }) {
+
+            Button(
+                enabled = !inUpsideDown,
+                onClick = { isAddingMessage = !isAddingMessage }
+            ) {
                 Text(
                     text = if (isAddingMessage) stringResource(R.string.cancel)
                     else stringResource(R.string.add_message)
+                )
+            }
+            Spacer(Modifier.size(20.dp))
+            if (inUpsideDown) {
+                Text(
+                    text = stringResource(R.string.cannot_edit_language_in_upside_down),
                 )
             }
         }
@@ -139,6 +160,7 @@ fun LanguageTopView(
     language: Language,
     onDeleteLanguage: () -> Unit,
     onEditLanguage: (String) -> Unit,
+    enableEditing: Boolean,
     modifier: Modifier = Modifier
 ) {
     var isEditing by rememberSaveable { mutableStateOf(false) }
@@ -162,6 +184,7 @@ fun LanguageTopView(
                 modifier = Modifier.weight(1f)
             )
             Button(
+                enabled = enableEditing,
                 onClick = {
                     onEditLanguage(languageName)
                     isEditing = false
@@ -180,9 +203,12 @@ fun LanguageTopView(
             Text(
                 text = language.name,
                 style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(vertical = 30.dp).weight(1f)
+                modifier = Modifier
+                    .padding(vertical = 30.dp)
+                    .weight(1f)
             )
             Button(
+                enabled = enableEditing,
                 onClick = { isEditing = true },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.background,
@@ -196,6 +222,7 @@ fun LanguageTopView(
             }
         }
         Button(
+            enabled = enableEditing,
             onClick = onDeleteLanguage,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.background,
@@ -215,6 +242,7 @@ fun LanguageTopView(
 fun LanguageDictionary(
     language: Language,
     onDeleteMessage: (String) -> Unit,
+    enableEditing: Boolean,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -275,6 +303,7 @@ fun LanguageDictionary(
                         modifier = Modifier.weight(2f),
                     )
                     Button(
+                        enabled = enableEditing,
                         onClick = { onDeleteMessage(key) },
                         contentPadding = PaddingValues(4.dp),
                         colors = ButtonDefaults.buttonColors(

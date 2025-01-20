@@ -23,6 +23,7 @@ import com.mapbox.maps.plugin.annotation.generated.createPolygonAnnotationManage
 import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.Coordinates
 import fcul.cmov.voidnetwork.domain.Portal
+import fcul.cmov.voidnetwork.repository.PortalsRepository
 import fcul.cmov.voidnetwork.ui.theme.BloodRed
 import fcul.cmov.voidnetwork.ui.utils.MAX_DISTANCE_FROM_PORTAL
 import fcul.cmov.voidnetwork.ui.utils.createCirclePoints
@@ -129,6 +130,7 @@ class PortalViewModel(application: Application) : AndroidViewModel(application) 
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
                     portals = snapshot.children.mapNotNull { it.getValue(Portal::class.java) }
+                    PortalsRepository.load(portals)
                 }
             }
             override fun onCancelled(error: DatabaseError) {
@@ -142,6 +144,7 @@ class PortalViewModel(application: Application) : AndroidViewModel(application) 
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
                     portals = snapshot.children.mapNotNull { it.getValue(Portal::class.java) }
+                    PortalsRepository.load(portals)
                 }
             }
 

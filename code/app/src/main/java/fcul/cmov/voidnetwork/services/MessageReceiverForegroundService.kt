@@ -25,9 +25,12 @@ import fcul.cmov.voidnetwork.storage.AppSettings
 import fcul.cmov.voidnetwork.domain.Message
 import fcul.cmov.voidnetwork.repository.LanguagesRepository
 import fcul.cmov.voidnetwork.repository.MessagesRepository
+import fcul.cmov.voidnetwork.repository.PortalsRepository
+import fcul.cmov.voidnetwork.repository.SharedStateManager
 import fcul.cmov.voidnetwork.ui.utils.emitSynchronizedSignals
 import fcul.cmov.voidnetwork.ui.utils.getCurrentUser
 import fcul.cmov.voidnetwork.ui.utils.getMessages
+import fcul.cmov.voidnetwork.ui.utils.isWithinPortalRange
 import kotlinx.coroutines.cancel
 
 private const val CHANNEL_ID = "signals_channel"
@@ -43,6 +46,7 @@ class MessageReceiverForegroundService : Service() {
     private val scope = CoroutineScope(Dispatchers.IO)
     private lateinit var settings: AppSettings
     private lateinit var childEventListener: ChildEventListener
+    private val messagesToDeliver = mutableListOf<Message>()
 
     companion object {
         fun start(context: Context) {
@@ -113,14 +117,21 @@ class MessageReceiverForegroundService : Service() {
                         LanguagesRepository[language].dictionary[signal]
                     }
                 )
-                MessagesRepository += message
-                if (message.sender == getCurrentUser()?.uid) return // ignore own messages
-                scope.launch {
-                    showNotification(message)
-                }
-                if (settings.allowReceiveSignals) {
-                    scope.launch {
-                        emitSynchronizedSignals(message.signal)
+                val inUpsideDown = SharedStateManager.inUpsideDown
+                val location = SharedStateManager.lastKnownLocation
+                val portals = PortalsRepository.portals
+                val outsidePortalRange = location != null && !isWithinPortalRange(location, portals)
+                when {
+                    inUpsideDown && outsidePortalRange -> {
+                        messagesToDeliver.add(message)
+                        return // ignore message
+                    }
+                    else -> {
+                        // deliver previously ignored messages when possible
+                        // not great, only delivers previous messages when a new one arrives
+                        messagesToDeliver.forEach { receiveMessage(it) }
+                        messagesToDeliver.clear()
+                        receiveMessage(message)
                     }
                 }
             }
@@ -136,6 +147,19 @@ class MessageReceiverForegroundService : Service() {
         messagesRef.orderByChild("timestamp")
             .startAt(System.currentTimeMillis().toDouble())
             .addChildEventListener(childEventListener)
+    }
+
+    private fun receiveMessage(message: Message) {
+        MessagesRepository += message
+        if (message.sender == getCurrentUser()?.uid) return // ignore own messages
+        scope.launch {
+            showNotification(message)
+        }
+        if (settings.allowReceiveSignals) {
+            scope.launch {
+                emitSynchronizedSignals(message.signal)
+            }
+        }
     }
 
     private fun getNewMainActivityIntent(): PendingIntent {

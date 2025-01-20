@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import fcul.cmov.voidnetwork.repository.SharedStateManager
 import kotlinx.coroutines.delay
 
 const val UPSIDE_DOWN_STATE_DURATION = 5000L
@@ -18,6 +19,11 @@ fun rememberUpsideDownState(): Boolean {
     val luminosityProvider = rememberLuminosityProvider()
     var elapsedTime by rememberSaveable { mutableStateOf(0L) }
     var inDark by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(inUpsideDown) {
+        // this is needed to share the state to the foreground service
+        SharedStateManager.inUpsideDown = inUpsideDown
+    }
 
     LaunchedEffect(Unit) {
         while (true) {

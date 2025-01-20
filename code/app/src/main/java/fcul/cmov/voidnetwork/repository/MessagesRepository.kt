@@ -1,12 +1,11 @@
 package fcul.cmov.voidnetwork.repository
 
-import androidx.compose.runtime.mutableStateListOf
 import fcul.cmov.voidnetwork.domain.Message
 import fcul.cmov.voidnetwork.ui.utils.MAX_RECENT_MESSAGES
 
 object MessagesRepository {
 
-    private val _messages = mutableStateListOf<Message>()
+    private val _messages = mutableListOf<Message>()
     val messages: List<Message> get() = _messages
 
     operator fun plusAssign(message: Message) {

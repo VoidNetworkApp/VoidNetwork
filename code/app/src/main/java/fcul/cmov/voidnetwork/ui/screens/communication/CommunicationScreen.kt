@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.SensorsOff
 import androidx.compose.material3.Button
@@ -56,6 +57,7 @@ import fcul.cmov.voidnetwork.ui.utils.composables.rememberClosestPortal
 import fcul.cmov.voidnetwork.ui.utils.composables.rememberSensorsPopupState
 import fcul.cmov.voidnetwork.ui.utils.composables.rememberUpdateDictionaryWithConfirmation
 import fcul.cmov.voidnetwork.ui.utils.composables.rememberUpsideDownState
+import fcul.cmov.voidnetwork.ui.utils.isWithinPortalRange
 import fcul.cmov.voidnetwork.ui.viewmodels.MessageSenderViewModel
 
 @Composable
@@ -74,12 +76,18 @@ fun CommunicationScreen(
     val (replaceSignalPopup, onUpdateDictionaryWithConfirmation) =
         rememberUpdateDictionaryWithConfirmation(languageSelected, onUpdateDictionary)
     val (showSensorsPopup, sensorsPopup) = rememberSensorsPopupState(currentPosition)
+    val withinPortalRange = closestPortal != null
+
     Box(modifier = Modifier.fillMaxSize()) {
         AllowReceiveSignalsButton(
-            modifier = Modifier.align(Alignment.TopEnd).padding(20.dp)
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(20.dp)
         )
         IconButton(onClick = showSensorsPopup,
-            modifier = Modifier.align(Alignment.TopStart).padding(20.dp)
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(20.dp)
         ) {
             Icon(
                 imageVector = Icons.Filled.BugReport,
@@ -131,6 +139,7 @@ fun CommunicationScreen(
                     sendSignal = { viewModel.sendSignal(languageSelected?.id, it) },
                     onTranslate = onTranslate,
                     onUpdateDictionary = onUpdateDictionaryWithConfirmation,
+                    enabled = !inUpsideDown || withinPortalRange
                 )
                 Spacer(Modifier.size(5.dp))
             }
@@ -200,6 +209,7 @@ fun MessageView(
     sendSignal: (String) -> Unit,
     onTranslate: (String) -> String?,
     onUpdateDictionary: (String, String) -> Unit,
+    enabled: Boolean,
     modifier: Modifier = Modifier,
 ) {
     var communicationMode: CommunicationMode by rememberSaveable { mutableStateOf(CommunicationMode.TOUCH)}
@@ -209,18 +219,20 @@ fun MessageView(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Button(onClick = {
-            communicationMode = communicationMode.next()
-        }) {
-            Text(
-                text = stringResource(
-                    when (communicationMode) {
-                        CommunicationMode.TOUCH -> R.string.touch
-                        CommunicationMode.LIGHT -> R.string.light
-                        CommunicationMode.AUTO -> R.string.auto
-                    }
+        if (enabled) {
+            Button(onClick = {
+                communicationMode = communicationMode.next()
+            }) {
+                Text(
+                    text = stringResource(
+                        when (communicationMode) {
+                            CommunicationMode.TOUCH -> R.string.touch
+                            CommunicationMode.LIGHT -> R.string.light
+                            CommunicationMode.AUTO -> R.string.auto
+                        }
+                    )
                 )
-            )
+            }
         }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -231,17 +243,35 @@ fun MessageView(
                 .clip(RoundedCornerShape(20.dp))
                 .background(MaterialTheme.colorScheme.surface)
         ) {
-            val onSubmit = { sequence: String, message: String ->
-                onUpdateDictionary(sequence, message)
-                sendSignal(sequence)
-            }
-            when (communicationMode) {
-                CommunicationMode.TOUCH ->
-                    TouchMessageView(onTranslate, onSubmit)
-                CommunicationMode.LIGHT ->
-                    LightMessageView(onTranslate, onSubmit)
-                CommunicationMode.AUTO ->
-                    AutomaticMessageView(languageSelected, sendSignal)
+
+            if (enabled) {
+                val onSubmit = { sequence: String, message: String ->
+                    onUpdateDictionary(sequence, message)
+                    sendSignal(sequence)
+                }
+                when (communicationMode) {
+                    CommunicationMode.TOUCH ->
+                        TouchMessageView(onTranslate, onSubmit)
+
+                    CommunicationMode.LIGHT ->
+                        LightMessageView(onTranslate, onSubmit)
+
+                    CommunicationMode.AUTO ->
+                        AutomaticMessageView(languageSelected, sendSignal)
+                }
+            } else {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(stringResource(R.string.cannot_send_messages))
+                    Icon(
+                        imageVector = Icons.Filled.ErrorOutline,
+                        contentDescription = stringResource(R.string.cannot_send_messages),
+                        modifier = Modifier.size(150.dp).padding(30.dp)
+                    )
+                    Text(stringResource(R.string.outside_portal_range))
+                }
             }
         }
     }
