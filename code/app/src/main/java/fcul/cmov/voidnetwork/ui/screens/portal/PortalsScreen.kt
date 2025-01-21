@@ -12,10 +12,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -135,7 +137,7 @@ fun PortalsScreenContent(
             exit = slideOutVertically { fullHeight -> -fullHeight } + fadeOut(),
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.35f)
+                .fillMaxHeight(0.4f)
                 .align(Alignment.TopCenter)
         ) {
             Column(
@@ -145,16 +147,21 @@ fun PortalsScreenContent(
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
                     .pointerInput(Unit) { detectTapGestures {} }
+                    .padding(20.dp)
             ) {
                 Text(
                     text = stringResource(R.string.upside_down_portals),
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(30.dp),
+                    modifier = Modifier.padding(bottom=20.dp),
                     color = MaterialTheme.colorScheme.onSecondary
                 )
                 LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
 
-                    val portalsSorted = arrangePortals(portals, currentPosition)
+                    val portalsSorted = currentPosition?.let { pos ->
+                        portals.sortedBy { portal ->
+                            calculateDistance(pos, portal.coordinates)
+                        }
+                    } ?: portals
 
                     items(portalsSorted) { portal ->
                         var distance by remember { mutableStateOf<Float?>(null) }
@@ -187,9 +194,6 @@ fun PortalsScreenContent(
                                         append(portal.street)
                                         distance?.let {
                                             append(" - ${"%.1f".format(it)} km")
-                                            if (it > MAX_DISTANCE_FROM_PORTAL) {
-                                                append(" (${stringResource(R.string.out_of_range)})")
-                                            }
                                         }
                                     }
                                 )
@@ -210,6 +214,7 @@ fun PortalsScreenContent(
                         }
                     }
                 }
+                Spacer(Modifier.size(30.dp))
             }
         }
         Button(
@@ -224,18 +229,6 @@ fun PortalsScreenContent(
             )
         }
     }
-}
-
-fun arrangePortals(portals: List<Portal>, currentPosition: Coordinates?): List<Portal> {
-    var map: MutableMap<Portal, Float> = mutableMapOf()
-    for(portal in portals) {
-        if(currentPosition != null) {
-            map[portal] = calculateDistance(currentPosition, portal.coordinates)
-        }
-    }
-    map = map.toList().sortedBy { (_, value) -> value }.toMap().toMutableMap()
-
-    return map.keys.toList()
 }
 
 @Composable

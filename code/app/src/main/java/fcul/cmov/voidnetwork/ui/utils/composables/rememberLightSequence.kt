@@ -4,7 +4,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import fcul.cmov.voidnetwork.ui.utils.LONG
-import fcul.cmov.voidnetwork.ui.utils.MIN_CODE_DURATION_SHORT
+import fcul.cmov.voidnetwork.ui.utils.MIN_LIGHT_CODE_DURATION_SHORT
 import fcul.cmov.voidnetwork.ui.utils.SHORT
 import kotlinx.coroutines.delay
 
@@ -12,7 +12,7 @@ import kotlinx.coroutines.delay
 fun rememberLightSequence(
     luminosityProvider: () -> Float,
     threshold: Float = 50f,
-    signalThresholdDuration: Long = MIN_CODE_DURATION_SHORT
+    signalThresholdDuration: Long = MIN_LIGHT_CODE_DURATION_SHORT
 ): Triple<String, Modifier, () -> Unit> {
     var sequence by rememberSaveable { mutableStateOf("") }
     var lightOnStartTime by rememberSaveable { mutableStateOf(0L) }

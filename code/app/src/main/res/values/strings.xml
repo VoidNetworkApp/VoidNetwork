@@ -80,4 +80,6 @@
     <string name="cannot_edit_language_in_upside_down">Cannot Edit Language in Upside Down</string>
     <string name="cannot_send_messages">Cannot Send Messages</string>
     <string name="outside_portal_range">(Outside Portal Range)</string>
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
 </resources>

@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,7 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import fcul.cmov.voidnetwork.R
@@ -73,8 +77,10 @@ fun PortalScreenContent(
     }
 
     Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.SpaceEvenly,
+        modifier = modifier
+            .fillMaxSize()
+            .padding(50.dp),
+        verticalArrangement = Arrangement.spacedBy(30.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
@@ -83,29 +89,46 @@ fun PortalScreenContent(
             modifier = Modifier.padding(10.dp)
         )
 
-        // TODO: Replace with captured image from camera (stored in firebase)
+        // TODO: Replace with captured image from camera stored in databse
         AsyncImage(
             model = "https://i.ibb.co/vzVc0v1/treeportal.png",
-            placeholder = painterResource(R.drawable.ic_launcher_foreground),
-            error = painterResource(R.drawable.ic_launcher_foreground),
             contentDescription = stringResource(R.string.portal_captured_with_camera),
             modifier = Modifier
                 .size(300.dp)
                 .background(Color.Black)
         )
-        Text(
-            text = portal.coordinates.toString()
-        )
-        distance?.let {
-            Text(text = stringResource(R.string.x_km_away).replace("{distance}", it.toString()))
-            Text(
-                text = if (it > MAX_DISTANCE_FROM_PORTAL) {
-                    " (${stringResource(R.string.out_of_range)})"
-                } else {
-                    " (${stringResource(R.string.in_range)})"
-                }
-            )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(5.dp),
+        ) {
+            Text("${stringResource(R.string.latitude)}: ${portal.coordinates.latitude}")
+            Text("${stringResource(R.string.longitude)}: ${portal.coordinates.longitude}")
+            distance?.let {
+                Text(text = stringResource(R.string.x_km_away).replace("{distance}", "%.1f".format(it)))
+                Text(
+                    text = if (it > MAX_DISTANCE_FROM_PORTAL) {
+                        " (${stringResource(R.string.out_of_range)})"
+                    } else {
+                        " (${stringResource(R.string.in_range)})"
+                    },
+                    modifier = Modifier.padding(10.dp),
+                    fontSize = 15.sp,
+                )
+            }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PortalScreenPreview() {
+    PortalScreenContent(
+        portal = Portal(
+            id = "123",
+            street = "Rua das Flores",
+            coordinates = Coordinates(0.0, 0.0),
+        ),
+        currentLocation = Coordinates(0.0, 0.0),
+    )
 }
 
