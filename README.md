@@ -1,11 +1,13 @@
 # VoidNetwork
 
-App that enables immersive, cross-dimensional communication for the Stranger Things universe, featuring voice messaging through portals, binary-coded signals and an '80s music player
+App that enables immersive, cross-dimensional communication for the Stranger Things universe, with binary-coded signal messages through Upside Down portals
 
 ### Mobile Computing (2024/2025) - Group 8
 - 56337 Diogo Pedro
 - 56274 Manuel Cardoso
 - 64371 Ricardo Costa
+
+![](https://skillicons.dev/icons?i=kotlin,androidstudio,firebase)
 
 ---
 
@@ -21,37 +23,37 @@ The Upside Down is a mysterious alternate dimension existing in parallel to the 
   - **Discord/WhatsApp**: Real-time communication with others.
 
 
-## Concept and Background
+## Concept
 
-- **Location-based Portals**: Users can register existing portals to enable voice communication if they are close enough.
-  - Using an image detection API, the app validates the presence of a portal (e.g., a tree) through the camera.
-  - If a user is within a specified distance of a portal, they can send a voice message that all users near other portals can receive in real-time.
-
-
-## Main Envisioned Features
-
-- **Vibration/Light-based Communication**: When far from a portal, users can communicate using taps (emitting vibration) or by using the luminosity sensor to send flashlight signals.
-  - To simplify communication, we will develop a custom binary language API for creation and translation. This allows users to have a unique language that can be automatically translated. By default, Morse code will be included as an option.
-
-
-## 80’s Music Player
-
-Users can listen to 1980s music featured in the TV show, without needing a cassette player or Walkman.
-
-- Play '80s classics
-- Listen along with friends
-- Custom playlists
-
+- **Vibration/Light-based Communication**
+	- Users can communicate through custom binary-coded languages:
+	- Custom binary languages for signal translation.
+	- Messages can be recorded using taps or luminosity signals, as well as automatic messages using the language dictionary
+	- Messages are received through vibration and flashlight signals and push notifications.
+- **Location-based Portals**
+	- Users can register portals to enable communication between both dimensions if within portal range.
+	- Using an image detection API, the app validates the presence of a portal (e.g., a tree) through the camera.
+	- If a user is within range of a portal, they can send and receive messages.
+	- Portals are displayed in a map along with the users location.
+- **Upside Down State**
+	- If a user is in the dark long enough, it is considered to be in the Upside Down
+	- Using the luminosity sensor, changes Upside Down state and the theme (real world uses light theme and Upside Down uses dark theme).
+	- This changes how the app works and the functionalities available to the user.
 
 ## Technologies
-
+- **Language & Frameworks:**
+	- Kotlin, Android, Jetpack Compose.
 - **Device Sensors**:
-  - **GPS** for registering portal locations.
-  - **Luminosity sensor** for light-based communication.
-- **Vibration**: Enables touch-based communication over distance.
-- **Google Cloud Vision API**: Detects portals through camera photos.
+	- **GPS** for registering portal locations.
+	- **Luminosity sensor** for light-based communication.
+	- **Camera** for capturing image required to register a portal.
+- **Other Device Features**:
+	- **Vibration** and flashlight **for** signal communication.
+	- **Foreground service** to deliver push notifications.
+- **Mapbox:** To display the portals and the user's location the map.
+- **ML Kit**: To detect portals through images captured with the camera.
 - **Firebase**: Centralized service for multi-user functionality and real-time communication.
-  - **Firestore**: Stores language translation mappings and portal GPS coordinates.
-  - **Cloud Functions**: Performs binary language translations in real-time and utilizes the image detection API.
+	- **Real-Time Database**: Stores language translation mappings and portal GPS coordinates.
+	- **Firebase Auth:** To distinguish which users sent which messages.
 
 
