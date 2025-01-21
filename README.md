@@ -17,11 +17,7 @@ App that enables immersive, cross-dimensional communication for the Stranger Thi
 
 The Upside Down is a mysterious alternate dimension existing in parallel to the human world. This app allows characters in this fictional world to communicate across both dimensions.
 
-- **Goal**: Enable communication with alternate realities, blending location-based features with immersive communication.
-- **Related Apps**:
-  - **Pokemon GO**: Blends real and fictional worlds through GPS and the camera.
-  - **Discord/WhatsApp**: Real-time communication with others.
-
+The goal of this app is to enable communication with alternate realities, blending location-based features with immersive communication.
 
 ## Concept
 
