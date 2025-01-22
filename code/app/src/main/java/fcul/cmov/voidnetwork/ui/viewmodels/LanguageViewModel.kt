@@ -37,11 +37,11 @@ class LanguageViewModel(
         return languageSelected?.dictionary?.get(signal)
     }
 
-    fun getLanguage(id: String): Language {
+    private fun getLanguage(id: String): Language {
         return LanguagesRepository[id]
     }
 
-    fun getLanguageOrNull(id: String): Language? {
+    private fun getLanguageOrNull(id: String): Language? {
         return try {
             getLanguage(id)
         } catch (e: IllegalArgumentException) {
@@ -58,7 +58,7 @@ class LanguageViewModel(
     }
 
     fun selectLanguage(id: String?) {
-        languageSelected = id?.let { getLanguage(it) }
+        languageSelected = id?.let { getLanguageOrNull(it) }
         settings.languageSelected = id
     }
 

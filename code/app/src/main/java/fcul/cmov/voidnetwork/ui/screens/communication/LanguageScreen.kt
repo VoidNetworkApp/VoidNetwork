@@ -52,16 +52,20 @@ fun LanguageScreen(
     viewModel: LanguageViewModel,
     id: String
 ) {
+    var hasInitialized by rememberSaveable { mutableStateOf(false) } // required to avoid race condition
 
     LaunchedEffect(Unit) {
         viewModel.selectLanguage(id)
+        hasInitialized = true
     }
 
-    val language = viewModel.languageSelected
-    // navigate back if the language is deleted or not found
-    if (language == null) {
-        viewModel.selectLanguage(null)
-        nav.popBackStack()
+    val languageSelected = viewModel.languageSelected
+    if (hasInitialized && languageSelected == null) {
+        // navigate back if the language is deleted or not found
+        LaunchedEffect(Unit) {
+            viewModel.selectLanguage(null)
+            nav.popBackStack()
+        }
         return
     }
 
@@ -69,16 +73,18 @@ fun LanguageScreen(
         title = stringResource(R.string.language_dictionary),
         nav = nav
     ) { paddingValues ->
-        LanguageScreenContent(
-            modifier = Modifier.padding(paddingValues),
-            language = language,
-            onDeleteMessage = { code -> viewModel.deleteMessageFromLanguage(id, code) },
-            onUpdateDictionary = { signal, message ->
-                viewModel.updateLanguageDictionary(id, signal, message)
-            },
-            onDeleteLanguage = { viewModel.deleteLanguage(id) },
-            onEditLanguage = { viewModel.editLanguage(language.id, it) }
-        )
+        languageSelected?.let { language ->
+            LanguageScreenContent(
+                modifier = Modifier.padding(paddingValues),
+                language = language,
+                onDeleteMessage = { code -> viewModel.deleteMessageFromLanguage(id, code) },
+                onUpdateDictionary = { signal, message ->
+                    viewModel.updateLanguageDictionary(id, signal, message)
+                },
+                onDeleteLanguage = { viewModel.deleteLanguage(id) },
+                onEditLanguage = { viewModel.editLanguage(language.id, it) }
+            )
+        }
     }
 }
 
