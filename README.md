@@ -7,7 +7,7 @@ App that enables immersive, cross-dimensional communication for the Stranger Thi
 - 56274 Manuel Cardoso
 - 64371 Ricardo Costa
 
-![](https://skillicons.dev/icons?i=kotlin,androidstudio,firebase)
+![](https://skillicons.dev/icons?i=kotlin,androidstudio,firebase,supabase)
 
 ---
 
@@ -51,5 +51,7 @@ The goal of this app is to enable communication with alternate realities, blendi
 - **Firebase**: Centralized service for multi-user functionality and real-time communication.
 	- **Real-Time Database**: Stores language translation mappings and portal GPS coordinates.
 	- **Firebase Auth:** To distinguish which users sent which messages.
+ - **Supabase**: Open-source alternative to Firebase with infrastructure built on PostgreSQL.
+	- **Storage**: Stores photos taken of portals.
 
 
