@@ -10,6 +10,7 @@ import io.github.jan.supabase.storage.storage
 import io.ktor.utils.io.errors.IOException
 import kotlin.jvm.Throws
 
+const val BUCKET_NAME = "VoidNetwork"
 val supabase = createSupabaseClient(
     supabaseUrl = BuildConfig.supabaseUrl,
     supabaseKey = BuildConfig.supabaseKey
@@ -17,24 +18,23 @@ val supabase = createSupabaseClient(
     install(Storage)
 }
 
-suspend fun uploadFile(bucketName: String, fileName: String, byteArray: ByteArray) {
+
+suspend fun uploadImageToSupabase(fileName: String, byteArray: ByteArray) {
     try {
-        val bucket = supabase.storage[bucketName]
+        val bucket = supabase.storage[BUCKET_NAME]
         bucket.upload("$fileName.jpg", byteArray)
     } catch (e: Exception) {
-        Log.d("VoidNetworkErrors", e.toString())
-        Log.d("VoidNetworkErrors", "Something went wrong with the upload")
+        Log.d("Supabase", e.toString())
     }
 }
 
-fun readFile(fileName: String, onImageUrlRetrieved:(url: String) -> Unit) {
+fun getImageUrlFromSupabase(fileName: String, onCompleted:(url: String) -> Unit) {
     try {
         val bucket = supabase.storage["VoidNetwork"]
         val url = bucket.publicUrl("$fileName.jpg")
-        onImageUrlRetrieved(url)
+        onCompleted(url)
     } catch (e: Exception) {
-        Log.d("VoidNetworkErrors", e.toString())
-        Log.d("VoidNetworkErrors", "Something went wrong with reading")
+        Log.d("Supabase", e.toString())
     }
 }
 

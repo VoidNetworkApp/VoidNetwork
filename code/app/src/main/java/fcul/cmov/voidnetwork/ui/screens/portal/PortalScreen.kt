@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -34,7 +31,7 @@ import fcul.cmov.voidnetwork.domain.Portal
 import fcul.cmov.voidnetwork.ui.utils.MAX_DISTANCE_FROM_PORTAL
 import fcul.cmov.voidnetwork.ui.utils.calculateDistance
 import fcul.cmov.voidnetwork.ui.utils.composables.ScreenWithTopBar
-import fcul.cmov.voidnetwork.ui.utils.readFile
+import fcul.cmov.voidnetwork.ui.utils.getImageUrlFromSupabase
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 
 @Composable
@@ -71,13 +68,20 @@ fun PortalScreenContent(
     currentLocation: Coordinates?,
 ) {
     var distance by remember { mutableStateOf<Float?>(null) }
+    var portalImageUri by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        getImageUrlFromSupabase(
+            fileName = portal.id,
+            onCompleted = { portalImageUri = it }
+        )
+    }
 
     LaunchedEffect(currentLocation) {
         if (currentLocation != null) {
             distance = calculateDistance(currentLocation, portal.coordinates)
         }
     }
-
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -90,10 +94,8 @@ fun PortalScreenContent(
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(10.dp)
         )
-        var imageUrl = ""
-        readFile(portal.id, onImageUrlRetrieved = { url -> imageUrl = url })
         AsyncImage(
-            model = imageUrl,
+            model = portalImageUri,
             contentDescription = stringResource(R.string.portal_captured_with_camera),
             contentScale = ContentScale.Crop,
             modifier = Modifier

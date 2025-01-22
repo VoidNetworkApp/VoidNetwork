@@ -57,8 +57,8 @@ class LanguageViewModel(
         addLanguageToFirebase(onCompleted)
     }
 
-    fun selectLanguage(id: String) {
-        languageSelected = getLanguage(id)
+    fun selectLanguage(id: String?) {
+        languageSelected = id?.let { getLanguage(it) }
         settings.languageSelected = id
     }
 

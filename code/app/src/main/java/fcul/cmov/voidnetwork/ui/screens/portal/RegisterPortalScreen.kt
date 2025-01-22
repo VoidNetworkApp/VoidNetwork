@@ -45,8 +45,7 @@ fun RegisterPortalScreen(
             capturedImageUri = capturedImageUri,
             onPhotoCaptured = { capturedImageUri = it },
             locationEnabled = currentLocation != null,
-            onRegisterPortal = {
-                uri ->
+            onRegisterPortal = { uri ->
                 currentLocation?.let { viewModel.registerPortal(it, uri) }
                 nav.popBackStack()
             },
@@ -72,11 +71,7 @@ fun RegisterPortalScreenContent(
         CameraPhoto(capturedImageUri)
         Button(
             enabled = portalDetected == true && locationEnabled,
-            onClick = {
-                if (capturedImageUri != null) {
-                    onRegisterPortal(capturedImageUri)
-                }
-            },
+            onClick = { capturedImageUri?.let{ onRegisterPortal(it) } },
         ) {
             Text(stringResource(R.string.register_portal))
         }

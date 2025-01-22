@@ -2,7 +2,7 @@ import org.w3c.dom.Element
 import java.io.FileNotFoundException
 import javax.xml.parsers.DocumentBuilderFactory
 
-fun getAllTokensFromSecrets(): Map<String, String> {
+fun getSecrets(): Map<String, String> {
     val secretsFile = file("app/src/main/res/values/secrets.xml")
     if (!secretsFile.exists()) {
         throw FileNotFoundException("secrets.xml not found at ${secretsFile.absolutePath}")
@@ -17,12 +17,12 @@ fun getAllTokensFromSecrets(): Map<String, String> {
         .associate { it.getAttribute("name") to it.textContent }
 }
 
-fun getTokenByName(tokenName: String): String {
-    val tokens = getAllTokensFromSecrets()
-    return tokens[tokenName] ?: throw IllegalArgumentException("$tokenName not found in secrets.xml")
+fun getSecret(name: String): String {
+    val tokens = getSecrets()
+    return tokens[name] ?: throw IllegalArgumentException("$name not found in secrets.xml")
 }
 
-val mapboxKey = getTokenByName("mapbox_access_token")
+val mapboxKey = getSecret("mapbox_access_token")
 gradle.extra.set("mapboxKey", mapboxKey)
 
 pluginManagement {

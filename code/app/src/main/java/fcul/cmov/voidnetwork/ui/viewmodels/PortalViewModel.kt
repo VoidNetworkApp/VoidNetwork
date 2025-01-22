@@ -29,7 +29,7 @@ import fcul.cmov.voidnetwork.ui.theme.BloodRed
 import fcul.cmov.voidnetwork.ui.utils.MAX_DISTANCE_FROM_PORTAL
 import fcul.cmov.voidnetwork.ui.utils.createCirclePoints
 import fcul.cmov.voidnetwork.ui.utils.getPortals
-import fcul.cmov.voidnetwork.ui.utils.uploadFile
+import fcul.cmov.voidnetwork.ui.utils.uploadImageToSupabase
 import fcul.cmov.voidnetwork.ui.utils.uriToByteArray
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -53,21 +53,23 @@ class PortalViewModel(application: Application) : AndroidViewModel(application) 
         return portals.find { it.id == id }
     }
 
-    fun registerPortal(currentPosition: Coordinates, uri: Uri) {
+    fun registerPortal(currentPosition: Coordinates, imageUri: Uri) {
         val context = getApplication<Application>().applicationContext
         val mapView = MapView(context)
         getStreetName(mapView, currentPosition) { street ->
             requireNotNull(street) { "Failed to fetch street name" }
+
+            // save portal in firebase
             val newRef = portalsRef.push()
             val newId = newRef.key ?: throw IllegalStateException("Failed to generate a new key for the portal")
             val portal = Portal(newId, street, currentPosition)
             newRef.setValue(portal)
-            // Save to Supabase
-            val imageByteArray = uri.uriToByteArray(context)
-            Log.d("VoidNetwork", "Captured image size: ${imageByteArray?.size}")
+           
+            // upload image to supabase
+            val imageByteArray = imageUri.uriToByteArray(context)
             imageByteArray?.let {
                 CoroutineScope(Dispatchers.IO).launch {
-                    uploadFile("VoidNetwork", newId, it)
+                    uploadImageToSupabase(newId, it)
                 }
             }
         }

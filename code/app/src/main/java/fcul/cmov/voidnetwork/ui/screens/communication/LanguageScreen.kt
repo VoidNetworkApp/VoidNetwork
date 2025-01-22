@@ -52,21 +52,26 @@ fun LanguageScreen(
     viewModel: LanguageViewModel,
     id: String
 ) {
-    val language = viewModel.getLanguageOrNull(id)
+
+    LaunchedEffect(Unit) {
+        viewModel.selectLanguage(id)
+    }
+
+    val language = viewModel.languageSelected
+    // navigate back if the language is deleted or not found
     if (language == null) {
-        // navigate back if the language is deleted or not found
-        LaunchedEffect(Unit) {
-            nav.popBackStack()
-        }
+        viewModel.selectLanguage(null)
+        nav.popBackStack()
         return
     }
+
     ScreenWithTopBar(
         title = stringResource(R.string.language_dictionary),
         nav = nav
     ) { paddingValues ->
         LanguageScreenContent(
             modifier = Modifier.padding(paddingValues),
-            language = viewModel.getLanguage(id),
+            language = language,
             onDeleteMessage = { code -> viewModel.deleteMessageFromLanguage(id, code) },
             onUpdateDictionary = { signal, message ->
                 viewModel.updateLanguageDictionary(id, signal, message)
