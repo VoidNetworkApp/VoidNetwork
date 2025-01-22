@@ -25,8 +25,7 @@ import fcul.cmov.voidnetwork.domain.Message
 @Composable
 fun rememberUpdateDictionaryWithConfirmation(
     languageSelected: Language?,
-    onUpdateDictionary: (String, String) -> Unit,
-    enabled: Boolean = true
+    onUpdateDictionary: (String, String) -> Unit
 ): Pair<@Composable () -> Unit, (String, String) -> Unit> {
     val popupState = rememberSaveablePopupState()
     var confirmAction by remember { mutableStateOf({}) }
@@ -36,11 +35,16 @@ fun rememberUpdateDictionaryWithConfirmation(
         if (message.isNotBlank()) {
             val onConfirmAction = { onUpdateDictionary(signal, message) }
             val translation = languageSelected?.dictionary?.get(signal)
-            if (languageSelected != null && !popupState.isVisible && translation != message) {
+            if (
+                languageSelected != null &&
+                translation != null &&
+                !popupState.isVisible &&
+                translation != message
+            ) { // signal already in dictionary but for a different meaning
                 confirmAction = onConfirmAction
                 existingMessage = Message(signal, translation)
                 popupState.show()
-            } else {
+            } else { // new signal or signal with the same meaning
                 onConfirmAction()
             }
         }
@@ -48,7 +52,7 @@ fun rememberUpdateDictionaryWithConfirmation(
     val replaceSignalPopup: @Composable () -> Unit = {
         if (popupState.isVisible && existingMessage != null) {
             ReplaceSignalPopup(
-                existingMessage = existingMessage!!,
+                existingMessage = existingMessage,
                 onConfirm = confirmAction,
                 onClose = popupState::hide
             )
@@ -60,10 +64,11 @@ fun rememberUpdateDictionaryWithConfirmation(
 
 @Composable
 fun ReplaceSignalPopup(
-    existingMessage: Message,
+    existingMessage: Message?,
     onConfirm: () -> Unit,
     onClose: () -> Unit
 ) {
+    if (existingMessage == null) return
     Popup(
         title = stringResource(R.string.signal_already_in_dictionary),
         onClose = onClose,
@@ -76,7 +81,7 @@ fun ReplaceSignalPopup(
             Text(
                 text = stringResource(R.string.replace_signal_question)
                     .replace("{signal}", existingMessage.signal)
-                    .replace("{message}", existingMessage.translation!!),
+                    .replace("{message}", existingMessage.translation ?: ""),
                 color = MaterialTheme.colorScheme.onSecondary
             )
             Spacer(Modifier.size(10.dp))
