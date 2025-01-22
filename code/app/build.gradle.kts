@@ -2,8 +2,9 @@ val mapboxKey: String = gradle.extra["mapboxKey"] as String
 
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.android") version "1.9.10"
     id("com.google.gms.google-services")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -57,6 +58,7 @@ android {
 dependencies {
 
     implementation("androidx.core:core-ktx:1.9.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.0.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation(platform("androidx.compose:compose-bom:2023.03.00"))
@@ -105,4 +107,9 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
     implementation("org.json:json:20210307")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // Supabase
+    implementation(platform("io.github.jan-tennert.supabase:bom:2.5.4"))
+    implementation("io.github.jan-tennert.supabase:storage-kt:VERSION")
+    implementation("io.ktor:ktor-client-android:2.3.13")
 }

@@ -1,6 +1,7 @@
 package fcul.cmov.voidnetwork.ui.viewmodels
 
 import android.app.Application
+import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +29,9 @@ import fcul.cmov.voidnetwork.ui.theme.BloodRed
 import fcul.cmov.voidnetwork.ui.utils.MAX_DISTANCE_FROM_PORTAL
 import fcul.cmov.voidnetwork.ui.utils.createCirclePoints
 import fcul.cmov.voidnetwork.ui.utils.getPortals
+import fcul.cmov.voidnetwork.ui.utils.uploadFile
+import fcul.cmov.voidnetwork.ui.utils.uriToByteArray
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -49,7 +53,7 @@ class PortalViewModel(application: Application) : AndroidViewModel(application) 
         return portals.find { it.id == id }
     }
 
-    fun registerPortal(currentPosition: Coordinates) {
+    fun registerPortal(currentPosition: Coordinates, uri: Uri) {
         val context = getApplication<Application>().applicationContext
         val mapView = MapView(context)
         getStreetName(mapView, currentPosition) { street ->
@@ -58,7 +62,16 @@ class PortalViewModel(application: Application) : AndroidViewModel(application) 
             val newId = newRef.key ?: throw IllegalStateException("Failed to generate a new key for the portal")
             val portal = Portal(newId, street, currentPosition)
             newRef.setValue(portal)
+            // Save to Supabase
+            val imageByteArray = uri.uriToByteArray(context)
+            Log.d("VoidNetwork", "Captured image size: ${imageByteArray?.size}")
+            imageByteArray?.let {
+                CoroutineScope(Dispatchers.IO).launch {
+                    uploadFile("VoidNetwork", newId, it)
+                }
+            }
         }
+
     }
 
     fun addPortalMarker(view: MapView, portal: Portal) {

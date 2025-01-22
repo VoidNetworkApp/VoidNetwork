@@ -33,6 +33,7 @@ import fcul.cmov.voidnetwork.domain.Portal
 import fcul.cmov.voidnetwork.ui.utils.MAX_DISTANCE_FROM_PORTAL
 import fcul.cmov.voidnetwork.ui.utils.calculateDistance
 import fcul.cmov.voidnetwork.ui.utils.composables.ScreenWithTopBar
+import fcul.cmov.voidnetwork.ui.utils.readFile
 import fcul.cmov.voidnetwork.ui.viewmodels.PortalViewModel
 
 @Composable
@@ -88,10 +89,10 @@ fun PortalScreenContent(
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(10.dp)
         )
-
-        // TODO: Replace with captured image from camera stored in databse
+        var imageUrl = ""
+        readFile(portal.id, onImageUrlRetrieved = { url -> imageUrl = url })
         AsyncImage(
-            model = "https://i.ibb.co/vzVc0v1/treeportal.png",
+            model = imageUrl,
             contentDescription = stringResource(R.string.portal_captured_with_camera),
             modifier = Modifier
                 .size(300.dp)
