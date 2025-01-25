@@ -1,6 +1,6 @@
 # VoidNetwork
 
-App that enables immersive, cross-dimensional communication for the Stranger Things universe, with binary-coded signal messages through Upside Down portals
+Void Network is an immersive mobile application inspired by the **Stranger Things** universe. It enables cross-dimensional communication through location-based portals and binary-coded signals, blending real-world sensor interactions with a fictional alternate dimension.
 
 ### Mobile Computing (2024/2025) - Group 8
 - 56337 Diogo Pedro
@@ -11,47 +11,51 @@ App that enables immersive, cross-dimensional communication for the Stranger Thi
 
 ---
 
-## Motivation
-
-*Stranger Things* is a unique universe set in the 80s with a distinct division between the real world and the Upside Down. 
-
-The Upside Down is a mysterious alternate dimension existing in parallel to the human world. This app allows characters in this fictional world to communicate across both dimensions.
-
-The goal of this app is to enable communication with alternate realities, blending location-based features with immersive communication.
-
 ## Concept
 
-- **Vibration/Light-based Communication**
-	- Users can communicate through custom binary-coded languages:
-	- Custom binary languages for signal translation.
-	- Messages can be recorded using taps or luminosity signals, as well as automatic messages using the language dictionary
-	- Messages are received through vibration and flashlight signals and push notifications.
+Void Network allows users to interact with others in the Upside Down dimension, with the following key features:
+
+- **Binary-Coded Communication**
+	- Users can communicate through custom binary-coded languages for signal translation
+	- Messages can be recorded using taps or luminosity signals, as well as automatically using the language dictionary
+	- Messages are received through vibration and flashlight signals and push notifications, even when the app is closed
 - **Location-based Portals**
-	- Users can register portals to enable communication between both dimensions if within portal range.
-	- Using an image detection API, the app validates the presence of a portal (e.g., a tree) through the camera.
-	- If a user is within range of a portal, they can send and receive messages.
-	- Portals are displayed in a map along with the users location.
+	- Users can register portals to enable communication between both dimensions if within portal range
+	- Using image detection, the app validates the presence of a portal (e.g., a tree) through a photo taken with the camera
+	- Portals are displayed in a map along with the users location
 - **Upside Down State**
-	- If a user is in the dark long enough, it is considered to be in the Upside Down
-	- Using the luminosity sensor, changes Upside Down state and the theme (real world uses light theme and Upside Down uses dark theme).
-	- This changes how the app works and the functionalities available to the user.
+	- Triggered by low light levels, detected with the luminosity sensor
+	- Transitions between light and dark themes to indicate whether the user is in the real world or the Upside Down
+	- Changes app functionalities and interactions based on the current state
 
 ## Technologies
-- **Language & Frameworks:**
-	- Kotlin, Android, Jetpack Compose.
-- **Device Sensors**:
-	- **GPS** for registering portal locations.
-	- **Luminosity sensor** for light-based communication.
-	- **Camera** for capturing image required to register a portal.
-- **Other Device Features**:
-	- **Vibration** and flashlight **for** signal communication.
-	- **Foreground service** to deliver push notifications.
-- **Mapbox:** To display the portals and the user's location the map.
-- **ML Kit**: To detect portals through images captured with the camera.
-- **Firebase**: Centralized service for multi-user functionality and real-time communication.
-	- **Real-Time Database**: Stores language translation mappings and portal GPS coordinates.
-	- **Firebase Auth:** To distinguish which users sent which messages.
- - **Supabase**: Open-source alternative to Firebase with infrastructure built on PostgreSQL.
-	- **Storage**: Stores photos taken of portals.
+
+- **Programming Language**: Kotlin
+- **UI Framework**: Jetpack Compose
+- **Architecture**: Model-View-ViewModel (MVVM)
+- **Backend Services**:
+  - **Firebase Auth**: For user authentication
+  - **Firebase Real-time Database**: For real-time message and portal synchronization
+  - **Supabase**: For file storage (e.g., portal photos)
+- **APIs**:
+  - **Mapbox**: For map visualization and street name fetching
+  - **ML Kit**: For portal (tree) image detection
+
+## Sensors
+
+- **GPS**: Tracks user location and checks portal proximity
+- **Luminosity Sensor**: Detects light levels to change between real-world and Upside Down states and also for building light signals
+- **Camera**: Captures portal images for portal registration
+
+## Device Features
+
+- **Vibration**: Sends binary signals as vibration patterns
+- **Flashlight**: Transmits signals as light patterns
+- **Push Notifications**: Notifies users of received signals, using a foreground service
 
 
+## Documentation
+
+The project documentation can be found in the [`docs`](./docs) folder.
+
+[Promotional Video](./docs//video.mp4)

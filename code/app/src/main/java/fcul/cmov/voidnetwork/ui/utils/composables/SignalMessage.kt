@@ -65,7 +65,7 @@ fun SignalMessage(
     ) {
         TextField(
             value = message,
-            onValueChange = { onMessageChange(it.take(MAX_MESSAGE_LENGTH)) },
+            onValueChange = { if (it.length <= MAX_MESSAGE_LENGTH) onMessageChange(it) },
             textStyle = MaterialTheme.typography.titleMedium.copy(textAlign = TextAlign.Center),
             label = {
                 Box(

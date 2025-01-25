@@ -8,7 +8,7 @@ data class Message(
 ) {
     override fun toString(): String {
         if (translation != null) {
-            return "$signal -> $translation"
+            return "$signal  $translation"
         }
         return signal
     }

@@ -15,6 +15,7 @@ import fcul.cmov.voidnetwork.domain.Language
 import fcul.cmov.voidnetwork.repository.LanguagesRepository
 import fcul.cmov.voidnetwork.storage.AppSettings
 import fcul.cmov.voidnetwork.ui.utils.LONG
+import fcul.cmov.voidnetwork.ui.utils.MAX_LANGUAGE_NAME_LENGTH
 import fcul.cmov.voidnetwork.ui.utils.MAX_SIGNAL_LENGTH
 import fcul.cmov.voidnetwork.ui.utils.MAX_MESSAGE_LENGTH
 import fcul.cmov.voidnetwork.ui.utils.SHORT
@@ -67,9 +68,8 @@ class LanguageViewModel(
     }
 
     fun editLanguage(id: String, name: String) {
-        require(id.isNotBlank()) { "Id must not be blank" }
         require(name.isNotBlank()) { "Name must not be blank" }
-        require(name.length <= MAX_MESSAGE_LENGTH) { "Language name length must be less than $MAX_MESSAGE_LENGTH" }
+        require(name.length <= MAX_LANGUAGE_NAME_LENGTH) { "Language name length must be less than $MAX_MESSAGE_LENGTH" }
 
         val language = getLanguage(id)
         if (language.name == name) return // no changes
@@ -78,7 +78,6 @@ class LanguageViewModel(
     }
 
     fun updateLanguageDictionary(id: String, signal: String, message: String) {7
-        require(id.isNotBlank()) { "Id must not be blank" }
         require(signal.length <= MAX_SIGNAL_LENGTH) { "Signal length must be less than $MAX_SIGNAL_LENGTH" }
         require(message.length <= MAX_MESSAGE_LENGTH) { "Message length must be less than $MAX_MESSAGE_LENGTH" }
         require(signal.all { it == SHORT || it == LONG }) { "Signal must be composed of $SHORT and $LONG symbols" }

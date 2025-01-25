@@ -40,8 +40,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fcul.cmov.voidnetwork.R
 import fcul.cmov.voidnetwork.domain.Language
-import fcul.cmov.voidnetwork.ui.utils.composables.TouchSignalMessage
+import fcul.cmov.voidnetwork.ui.utils.MAX_LANGUAGE_NAME_LENGTH
 import fcul.cmov.voidnetwork.ui.utils.composables.ScreenWithTopBar
+import fcul.cmov.voidnetwork.ui.utils.composables.TouchSignalMessage
 import fcul.cmov.voidnetwork.ui.utils.composables.rememberUpdateDictionaryWithConfirmation
 import fcul.cmov.voidnetwork.ui.utils.composables.rememberUpsideDownState
 import fcul.cmov.voidnetwork.ui.viewmodels.LanguageViewModel
@@ -190,7 +191,7 @@ fun LanguageTopView(
         if (isEditing) {
             TextField(
                 value = languageName,
-                onValueChange = { languageName = it },
+                onValueChange = { if (it.length <= MAX_LANGUAGE_NAME_LENGTH) languageName = it },
                 label = { Text(stringResource(R.string.language_name)) },
                 modifier = Modifier.weight(1f)
             )
